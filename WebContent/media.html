@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<script src="system/script/jquery-2.0.3.min.js"></script>
+<script src="system/script/jquery.lazyload.js"></script>
+<script src="system/script/jquery.mousewheel.js"></script>
+<script src="system/script/jquery.querystring.js"></script>
+<script src="system/script/jquery.tooltips.min.js"></script>
+<script src="system/script/plex.js"></script>
+<script src="system/script/media.js"></script>
+
+<script>
+$(document).ready(function() {
+	myMedia = new Media();
+	myMedia.initialise();
+});
+</script>
+
+<link rel="stylesheet" type="text/css" href="system/style/library.css"/>
+<link rel="stylesheet" type="text/css" href="system/style/glyphicons.css"/>
+<link rel="stylesheet" type="text/css" href="system/style/tooltips.css"/>
+</head>
+
+<body>
+<div id="applicationWallpaper"></div>
+<div id="application">
+	<div id="menuBar">
+		<div id="menu">
+			<ul>
+				<li><a id="back" data-key-down="#home" data-key-right="#mediaViewContent a:first" href="javascript:history.back();" title="Back"><i class="glyphicon left-arrow"></i></a></li>
+				<li><a id="home" data-key-up="#back" data-key-down="#filter" data-key-right="#mediaViewContent a:first" href="index.html" title="Home"><i class="glyphicon home"></i></a></li>		
+				<li><a id="filter" data-key-up="#home" data-key-right="#mediaViewContent a:first" href="javascript:myMedia.toggleMenu();" title="Menu"><i class="glyphicon show-thumbnails-with-lines"></i></a></li>					
+			</ul>
+		</div>
+		<div id="menuFilter" style="display: none;">
+			<div id="menuFilterView">
+			<ul>
+				<li><a id="thumbsView" data-key-down="#menuFilterContent a[data-key-index='0']" data-key-right="#listView" href="" title="Thumbs"><i class="glyphicon show-big-thumbnails"></i></a></li>
+				<li><a id="listView" data-key-down="#menuFilterContent a[data-key-index='0']" data-key-right="#filter" data-key-left="#thumbsView" href="" title="List"><i class="glyphicon show-lines"></i></a></li>
+			</ul>
+			</div>
+			<div id="menuFilterContent" class="content"><ul></ul></div>
+		</div>		
+	</div>
+	<div id="mediaView">
+		<div id="title" style="display: none;"></div>
+		<div id="mediaViewContent"><ul></ul></div>
+	</div>
+</div>
+<div id="debug" style="display: none;"></div>
+<div id="loader" style="display: none;">
+	<img src="system/images/loader.gif" alt="loading"/>
+	<div id="message"></div>
+</div>
+<object type="application/x-netcast-info" id="device" width="0" height="0"></object>
+</body>
+
+</html>

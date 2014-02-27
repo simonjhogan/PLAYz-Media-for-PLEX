@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<script src="system/script/jquery-2.0.3.min.js"></script>
+<script src="system/script/jquery.lazyload.js"></script>
+<script src="system/script/jquery.mousewheel.js"></script>
+<script src="system/script/jquery.caret.js"></script>
+<script src="system/script/jquery.tooltips.min.js"></script>
+<script src="system/script/plex.js"></script>
+<script src="system/script/index.js"></script>
+
+
+<script>
+$(document).ready(function() {
+	menu = new Menu();
+	menu.initialise();	
+});
+</script>
+
+<link rel="stylesheet" type="text/css" href="system/style/library.css"/>
+<link rel="stylesheet" type="text/css" href="system/style/glyphicons.css"/>
+
+</head>
+
+<body>
+<div id="applicationWallpaper"></div>
+<div id="application">
+	<div id="navigator">
+		<div id="clock"></div>
+		<div class="flipper">
+			<div id="sections" class="menu vertical">
+				<ul></ul>
+			</div>
+			<div id="settings" class="menu vertical">
+				<ul>
+					<li><a data-key-index="1" data-title="About" data-key="about" data-section-type="about" href="">About</a></li>	
+					<li><a data-key-index="2" data-title="Help" data-key="help" data-section-type="help" href="">Help</a></li>								
+					<li><a data-key-index="3" data-title="Settings" data-key="settings" data-section-type="settings" href="">Settings</a></li>	
+					<li><a data-key-index="4" data-title="Options" data-key="options" data-section-type="options" href="">Options</a></li>								
+					<li><a data-key-index="5" data-title="Quit" data-key="quit" data-section-type="quit" href="" class="selected">Quit</a></li>								
+				</ul>
+			</div>
+		</div>
+		<div id="navigatorSwitch" class="action"><i class="glyphicon message-forward"></i></div>
+	</div>
+	<div id="media">
+			<div id="server">
+				<div id="serverName"></div>
+				<div id="serverSelect" style="display: none;"></div>
+			</div>
+			<div id="recentlyAdded" class="media-quick-menu" style="display: none;">
+				<div class="content"><ul></ul></div>
+				<div class="name">Recently Added</div>
+			</div>
+			<div id="search" class="dialog" style="display: none;">
+				<div class="header">Search</div>
+				<div class="content">
+					<form id="searchForm" action="media.html" method="get">
+						<p>Enter you query in the field below and press find to search ...</p>
+						<div class="details"><input data-key-down="#find" data-key-left="#navigator #sections a.selected" name="query" id="query" type="text" value="" required="required" placeholder="e.g. metallica"/></div>
+						<div class="actions"><button data-key-up="#query"  data-key-left="#navigator #sections a.selected" id="find">Find</button></div>
+						<input type="hidden" name="action" value="search"/>
+					</form>
+				</div>
+			</div>			
+			<div id="about" class="dialog" style="display: none;">
+				<div class="header">About</div>
+				<div class="content">
+				
+					<h3><img src="system/images/plex.png" /></h3>
+					<p>Version 0.6.3.1 - 2014/01/11</p>
+					<p>Created by Simon J. Hogan</p>
+					<p>H<sup>3</sup>Consulting &copy; 2014</p>
+					<p><a href="http://www.plexapp.com">www.plexapp.com</a> | <a href="http://glyphicons.com/">glyphicons.com</a> | <a href="www.h3consulting.net">www.h3consulting.net</a></p>
+					</p>
+				</div>
+			</div>
+			<div id="help" class="dialog" style="display: none;">
+				<div class="header">Help</div>
+				<div class="content">
+					<p>Help documentation can be found at <a href="http://plex.h3consulting.net">plex.h3consulting.net</a></p>
+					<h4>Notice</h4>
+					<p>This application requires access to PLEX Media Server in order to function.</p>
+					<p>PLEX Media Server can be dowloaded from <a href="http://www.plexapp.com">www.plexapp.com</a></p>
+				</div>			
+			</div>
+			<div id="config" class="dialog" style="display: none;">
+				<div class="header">Settings</div>
+				<div class="content">
+					<form onsubmit="return false;">
+						<p>Enter you PLEX Media Server (PMS) ip address and <span class="underline">port</span> below<br></p>
+						<div class="details"><input data-key-down="#save" name="pms" id="pms" type="text" value="" required="required" placeholder="e.g. 192.168.0.3:32400" autocomplete="off"/></div>
+						<div class="actions">
+							<table>
+								<tr>
+									<td><button data-key-up="#pms" data-key-down="#k4" data-key-left="#navigator #settings a.selected" data-key-right="#k8" class="keypad" id="k7">7</button></td>
+									<td><button data-key-up="#pms" data-key-down="#k5" data-key-left="#k7" data-key-right="#k9" class="keypad" id="k8">8</button></td>
+									<td><button data-key-up="#pms" data-key-down="#k6" data-key-left="#k8" data-key-right="#scan" class="keypad" id="k9">9</button></td>
+									<td><button data-key-up="#pms" data-key-down="#save" data-key-left="#k9" id="scan"><i class="glyphicon magic"></i> Scan</button></td>
+								<tr>
+									<td><button data-key-up="#k7" data-key-down="#k1" data-key-left="#navigator #settings a.selected" data-key-right="#k5" class="keypad" id="k4">4</button></td>
+									<td><button data-key-up="#k8" data-key-down="#k2" data-key-left="#k4" data-key-right="#k6" class="keypad" id="k5">5</button></td>
+									<td><button data-key-up="#k9" data-key-down="#k3" data-key-left="#k5" data-key-right="#save" class="keypad" id="k6">6</button></td>
+									<td><button data-key-up="#scan" data-key-down="#kb" data-key-left="#k6" id="save"><i class="glyphicon server-plus"></i> Save</button></td>
+								</tr>
+								<tr>
+									<td><button data-key-up="#k4" data-key-down="#k0" data-key-left="#navigator #settings a.selected" data-key-right="#k2" class="keypad" id="k1">1</button></td>
+									<td><button data-key-up="#k5" data-key-down="#kd" data-key-left="#k1" data-key-right="#k3" class="keypad" id="k2">2</button></td>
+									<td><button data-key-up="#k6" data-key-down="#kc" data-key-left="#k2" data-key-right="#kb" class="keypad" id="k3">3</button></td>
+									<td><button data-key-up="#save" data-key-down="#kcl" data-key-left="#k3" class="keypad" id="kb"><i class="glyphicon left-arrow"></i></button></td>
+								</tr>
+								<tr>
+									<td><button data-key-up="#k1" data-key-left="#navigator #settings a.selected" data-key-right="#kd" class="keypad" id="k0">0</button></td>
+									<td><button data-key-up="#k2" data-key-left="#k0" data-key-right="#kc" class="keypad" id="kd">.</button></td>
+									<td><button data-key-up="#k3" data-key-left="#kd" data-key-right="#kcl" class="keypad" id="kc">:</button></td>
+									<td><button data-key-up="#kb" data-key-left="#kc" class="keypad" id="kcl">Clear</button></td>
+								</tr>
+							</table>
+						</div>
+						<div id="settingsMessage" class="details"></div>
+					</form>
+				</div>			
+			</div>
+			<div id="options" class="dialog" style="display: none;">
+				<div class="header">Options</div>
+				<div class="content">
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-down="#optionStandalonePlayer" id="optionTranscoding" href=""><i class="glyphicon unchecked"></i> Enable HLS transcoding - requires PMS to be installed on sufficiently powerful computer</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionTranscoding" data-key-down="#optionTimeDisplay" id="optionStandalonePlayer" href=""><i class="glyphicon unchecked"></i> Use standalone media player for Direct Play content</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionStandalonePlayer" data-key-down="#optionTitleOverlays" id="optionTimeDisplay" href=""><i class="glyphicon unchecked"></i> Display 24 hour time</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionTimeDisplay" data-key-down="#optionNoThemeMusic" id="optionTitleOverlays" href=""><i class="glyphicon unchecked"></i> Hide title overlays on posters</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionTitleOverlays" data-key-down="#optionDisableNextEpisodePlay" id="optionNoThemeMusic" href=""><i class="glyphicon unchecked"></i> Disable series theme music</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionNoThemeMusic" data-key-down="#optionBackdropHover" id="optionDisableNextEpisodePlay" href=""><i class="glyphicon unchecked"></i> Disable autoplay of next episode</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionDisableNextEpisodePlay" data-key-down="#optionDisableWatchedIcons" id="optionBackdropHover" href=""><i class="glyphicon unchecked"></i> Show background art on thumbnail focus</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionBackdropHover" data-key-down="#optionLargeText" id="optionDisableWatchedIcons" href=""><i class="glyphicon unchecked"></i> Disable unwatched icons on thumbnails</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionDisableWatchedIcons" data-key-down="#optionDebugDetails" id="optionLargeText" href=""><i class="glyphicon unchecked"></i> User Extra Large fonts for all text</a></div>
+					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionLargeText" id="optionDebugDetails" href=""><i class="glyphicon unchecked"></i> Provide debug and system resource information</a></div>
+				</div>			
+			</div>
+	</div>
+</div>
+<div id="preview" style="display: none;">
+	<div id="previewContent" class="content"></div>
+	<div id="previewClose" class="action"><i class="glyphicon remove"></i></div>	
+</div>
+<div id="debug" style="display: none;"></div>
+<div id="loader" style="display: none;">
+	<img src="system/images/loader.gif" alt="loading"/>
+	<div id="message"></div>
+</div>
+<object type="application/x-netcast-info" id="device" width="0" height="0"></object>
+</body>
+
+</html>

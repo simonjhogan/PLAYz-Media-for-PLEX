@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<script src="system/script/jquery-2.0.3.min.js"></script>
+<script src="system/script/jquery.lazyload.js"></script>
+<script src="system/script/jquery.mousewheel.js"></script>
+<script src="system/script/jquery.querystring.js"></script>
+<script src="system/script/jquery.tooltips.min.js"></script>
+<script src="system/script/plex.js"></script>
+<script src="system/script/item.js"></script>
+
+<script>
+$(document).ready(function() {
+	metadata = new MediaMetadata();
+	metadata.initialise();
+});
+</script>
+
+<link rel="stylesheet" type="text/css" href="system/style/library.css"/>
+<link rel="stylesheet" type="text/css" href="system/style/glyphicons.css"/>
+<link rel="stylesheet" type="text/css" href="system/style/tooltips.css"/>
+</head>
+
+<body>
+<div id="applicationWallpaper"></div>
+<div id="application">
+	<div id="menuBar">
+		<div id="menu">
+			<ul>
+				<li><a id="back" data-key-down="#home" data-key-right="#children a:first" href="javascript:history.back();" title="Back"><i class="glyphicon left-arrow"></i></a></li>
+				<li><a id="home" data-key-up="#back" data-key-down="#play" data-key-right="#children a:first" href="index.html" title="Home"><i class="glyphicon home"></i></a></li>		
+				<li><a id="play" data-key-up="#home" data-key-down="#audio" data-key-right="#children a:first" href="" title="Play" style="display: none;"><i class="glyphicon play"></i></a></li>	
+				<li><a id="audio" data-key-up=#play data-key-down="#subtitles" data-key-right="#children a:first" href="" title="Audio selection" style="display: none;"><i class="glyphicon adjust-alt"></i></a></li>	
+				<li><a id="subtitles" data-key-up="#audio" data-key-down="#watched" data-key-right="#children a:first" href="" title="Subtitles" style="display: none;"><i class="glyphicon conversation"></i></a></li>	
+				<li><a id="watched" data-key-up="#subtitles" data-key-right="#children a:first" href="" title="Watched status" style="display: none;"><i class="glyphicon ok"></i></a></li>							
+			</ul>
+		</div>	
+	</div>
+	<div id="mediaPreview">
+		<div id="title" style="display: none;"></div>
+		<div id="mediaPreviewContent" class="content"></div>
+		<audio id="audioPlayer" style="display: none;" controls src=""></audio>
+	</div>
+	<div id="selectDialog" style="display: none;">
+		<div class="label"></div>
+		<div class="content"></div>
+	</div>
+	<div class="mediaHighlight"></div>
+</div>
+<div id="debug" style="display: none;"></div>
+<div id="loader" style="display: none;">
+	<img src="system/images/loader.gif" alt="loading"/>
+	<div id="message"></div>
+</div>
+<object type="application/x-netcast-info" id="device" width="0" height="0"></object>
+</body>
+
+</html>

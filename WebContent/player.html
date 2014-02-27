@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<script src="system/script/jquery-2.0.3.min.js"></script>
+<script src="system/script/jquery.lazyload.js"></script>
+<script src="system/script/jquery.progress.js"></script>
+<script src="system/script/jquery.mousewheel.js"></script>
+<script src="system/script/jquery.querystring.js"></script>
+<script src="system/script/jquery.tooltips.min.js"></script>
+<script src="system/script/plex.js"></script>
+<script src="system/script/player.js"></script>
+
+<script>
+$(document).ready(function() {
+	player = new Player();
+	player.initialise();
+});
+</script>
+
+<link rel="stylesheet" type="text/css" href="system/style/player.css"/>
+<link rel="stylesheet" type="text/css" href="system/style/glyphicons.css"/>
+<link rel="stylesheet" type="text/css" href="system/style/tooltips.css"/>
+</head>
+
+<body>
+<div id="applicationWallpaper"></div>
+<div id="application">
+<object type="application/x-netcast-av"
+    width="1280"
+    height="720"
+    autoStart="true"
+    id="player">
+</object>
+<div id="optionsLeft" class="options">
+<ul>
+	<li><a data-key-index="1" id="back" href="#" title="Back"><i class="glyphicon circle-arrow-left"></i></a></li>
+	<li><a data-key-index="2" id="info" href="#" title="Info"><i class="glyphicon circle-info"></i></a></li>
+	<li><a data-key-index="3" id="qmenu" href="#" title="QMENU"><i class="glyphicon cogwheel"></i></a></li>	
+	<li><a data-key-index="4" id="ratio" href="#" title="Ratio"><i class="glyphicon crop"></i></a></li>	
+</ul>
+</div>
+<div id="controls" style="display: none;">
+	<div class="progress">
+		<div id="progressbar-container"></div>
+		<div id="progressTime"></div>
+	</div>
+	<ul class="buttons">
+		<li><a data-key-index="5" id="stop" href="#" title="Stop"><i class="glyphicon stop"></i></a></li>		
+		<li><a data-key-index="6" id="skipBackward" href="#" title="Rewind"><i class="glyphicon rewind"></i></a></li>
+		<li><a data-key-index="7" id="pause" href="#" class="selected" title="Pause"><i class="glyphicon pause"></i></a></li>		
+		<li><a data-key-index="8" id="play" href="#" title="Play"><i class="glyphicon play"></i></a></li>	
+		<li><a data-key-index="9" id="skipForward" href="#" title="Forward"><i class="glyphicon forward"></i></a></li>			
+	</ul>
+</div>
+<div id="optionsRight" class="options">
+<ul>
+	<li><a data-key-index="10" id="language" href="#" title="Audio Language" style="display: none;"><i class="glyphicon globe-af"></i></a></li>
+	<li><a data-key-index="11" id="subtitles" href="#" title=Subtitles style="display: none;"><i class="glyphicon chat"></i></a></li>	
+</ul>
+</div>
+<div id="message" style="display: none;"></div>
+<div id="infoBox" style="display: none;"><div class="content"></div></div>
+<div id="dialog" style="display: none;"><div class="content"></div></div>
+</div>
+<div id="debug" style="display: none;"></div>
+<div id="loader" style="display: none;">
+	<img src="system/images/loader.gif" alt="loading"/>
+	<div id="loadMessage"></div>
+</div>
+<object type="application/x-netcast-info" id="device" width="0" height="0"></object>
+</body>
+
+</html>

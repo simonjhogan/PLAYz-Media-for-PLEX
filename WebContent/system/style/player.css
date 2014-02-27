@@ -1,0 +1,367 @@
+﻿body {
+	margin: 0px;
+	background-color: #333;
+	font-family: Arial, Helvetica, sans-serif;
+	color: #fff;
+	font-size: 20px;
+}
+
+body.xlarge {
+	font-size: 28px;	
+}
+
+#applicationWallpaper {
+	position: absolute;
+	top: 0px;
+	left: 0px;	
+	width: 1280px;
+	height: 720px;	
+    -webkit-box-sizing: border-box;  
+	background-image: url('../images/background.png');        
+}
+
+#application {
+	position: absolute;
+	top: 0px;
+	left: 0px;	
+	width: 1280px;
+	height: 720px;	
+    -webkit-box-sizing: border-box;  	
+    overflow: hidden;  	  
+	background-color: rgba(5,5,5,0.7);    
+}
+
+#loader {
+	position: absolute;
+	top: 610px;
+	left: 1070px;
+	width: 150px;
+	text-align: center;
+	border-radius: 5px;
+	border: 2px solid #666; 
+	padding: 5px;
+	color: #fff;
+	font-size: 18px;
+	background-color: rgba(10,10,10,0.8);	
+}
+
+#controls {
+	position: absolute;
+	bottom: 20px;
+	left: 0px;
+	right: 0px;
+	padding-bottom: 8px;
+	text-align: center;
+	background-color: rgba(10,10,10,0.9);
+	/*border-radius: 5px;*/		
+}
+
+#controls ul.buttons {
+	margin: 0px;
+	padding: 2px;
+}
+
+#controls ul.buttons li {
+	display: inline-block;
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+	font-size: 36px;
+}
+
+#optionsLeft {
+	position: absolute;
+	bottom: 38px;
+	left: 30px;
+	font-size: 32px;
+	z-index: 9999;
+}
+
+#optionsRight {
+	position: absolute;
+	bottom: 38px;
+	right: 32px;
+	font-size: 30px;
+	z-index: 9999;
+	text-align: right;
+}
+
+.options ul {
+	margin: 0px;
+	padding: 2px;
+}
+
+.options ul li {
+	display: inline-block;
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+
+a {
+	display: inline-block;
+	outline: none;
+	color: #fff;
+	height: 36px;	
+	text-decoration: none;
+}
+
+a.selected {
+	color: #ff9900;
+	text-shadow: 0 0 2px #eee, 0 0 10px #aaa;	
+}
+ 
+#progressbar-container {
+    border-radius: 3px; 
+    overflow: hidden;
+    display: inline-block;
+    margin: 2px 10px;
+	background-color: rgba(1,1,1,0.7);     
+}
+
+#progressTime {
+	position: absolute;
+	font-size: 18px;
+	top: 1px;
+	left: 950px;	
+}
+
+#message {
+	position: absolute;
+	top: 32px;
+	right: 32px;
+	text-align: right;	
+	padding: 5px;
+	background-color: rgba(5,5,5,0.7); 
+	border-radius: 5px;	
+	z-index: 9999;
+	text-align: center;			 	
+}
+
+#infoBox {
+	position: absolute;
+	top: 32px;
+	left: 32px;
+	width: 600px;
+	max-height: 650px;
+	padding: 5px;
+	background-color: rgba(5,5,5,0.7); 
+	border-radius: 5px;	
+	z-index: 9999;	
+	border: 2px solid #333;			
+}
+
+#dialog {
+	position: absolute;
+	top: 200px;
+	left: 400px;
+	right: 400px;
+	background-color: rgba(0,0,0,0.9); 
+	border-radius: 5px;	
+	z-index: 9999;	
+	color: #999;
+	border: 2px solid #333;
+	min-height: 20px;
+}
+
+#dialog .content {
+	max-height: 250px;
+	overflow: auto;
+}
+
+#dialog  a {
+	display: block;	
+	text-align: left;
+	margin: 2px;
+	paddin: 2px;
+	background-color: rgba(0,0,0,0.8); 	
+}
+
+#dialog  a:focus {
+	color: #ff9900;
+	background-color: rgba(50,50,50,0.8);	
+}
+
+#dialog .option {
+	display: block;
+	padding: 4px;
+}
+
+#dialog .content::-webkit-scrollbar {
+	width: 8px;	
+}
+
+#dialog .content::-webkit-scrollbar-thumb {
+	background-color: rgba(255,255,255,0.2);
+}
+
+#dialog .content::-webkit-scrollbar-track {
+	background-color: rgba(0,0,0,0.4);
+}
+
+.xlarge {
+	font-size: 170%;
+}
+
+.content .title {
+	color: #FF9900;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;		
+}
+
+.content .subtitle {
+	color: #FF9900;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;		
+}
+
+.content .tagline {
+	color: #ccc;
+	padding: 5px;	
+	font-size: 90%;	
+}
+
+.content .summary {
+	display: block;
+	color: #fff;
+	padding: 5px;	
+	overflow: hidden;
+	overflow: hidden;
+	max-height: 140px;
+}
+
+.content .time {
+	color: #fff;
+	padding: 5px;		
+}
+
+.content .duration {
+	display: inline-block;
+	width: 50%;
+	text-align: left;	
+}
+
+.content .year {
+	display: inline-block;
+	width: 50%;
+	text-align: right;
+}
+
+.content .roles {
+	color: #fff;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;	
+}
+
+.content .roles:before {
+	color: #ccc;
+	font-size: 70%;		
+	content: "Cast: ";	
+	text-transform: uppercase;
+}
+
+.content .season-n:before {
+	color: #ccc;
+	font-size: 70%;		
+	content: "Season: ";
+	text-transform: uppercase;		
+}
+
+.content .episode-n:before {
+	color: #ccc;
+	font-size: 70%;	
+	content: " Episode: ";	
+	text-transform: uppercase;	
+}
+
+.content div.genre {
+	color: #fff;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.content div.genre:before {
+	color: #ccc;
+	font-size: 70%;	
+	content: "Genre: ";	
+	text-transform: uppercase;	
+}
+
+.content div.resolution {
+	color: #fff;
+	padding: 5px;
+	font-size: 90%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.content div.resolution:before {
+	color: #ccc;
+	font-size: 70%;	
+	content: "Resolution: ";	
+	text-transform: uppercase;	
+}
+
+.content .director {
+	color: #fff;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.content .director:before {
+	color: #ccc;
+	font-size: 70%;	
+	content: "Director: ";	
+	text-transform: uppercase;	
+}
+
+.content .writer {
+	color: #fff;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.content .writer:before {
+	color: #ccc;
+	font-size: 70%;	
+	content: "Writer: ";	
+	text-transform: uppercase;	
+}
+
+.content .contentRating {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	color: #FF9900;
+}
+
+
+#debug {
+	position: absolute;
+	left: 32px;
+	top: 32px;
+	width: 400px;
+	max-height: 400px;
+	background-color: rgba(0,0,0,0.5); 	
+	font-size: 90%;
+	border-radius: 5px;
+	padding: 5px;
+}
+
+#debug th {
+	text-align: left;
+	padding-right: 10px;
+}

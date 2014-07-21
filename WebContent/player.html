@@ -11,11 +11,14 @@
 <script src="system/script/jquery.tooltips.min.js"></script>
 <script src="system/script/plex.js"></script>
 <script src="system/script/player.js"></script>
+<script src="system/script/language.js"></script>
 
 <script>
 $(document).ready(function() {
-	player = new Player();
-	player.initialise();
+	languageInit(function() {
+		player = new Player();
+		player.initialise();
+	});
 });
 </script>
 
@@ -35,10 +38,10 @@ $(document).ready(function() {
 </object>
 <div id="optionsLeft" class="options">
 <ul>
-	<li><a data-key-index="1" id="back" href="#" title="Back"><i class="glyphicon circle-arrow-left"></i></a></li>
-	<li><a data-key-index="2" id="info" href="#" title="Info"><i class="glyphicon circle-info"></i></a></li>
-	<li><a data-key-index="3" id="qmenu" href="#" title="QMENU"><i class="glyphicon cogwheel"></i></a></li>	
-	<li><a data-key-index="4" id="ratio" href="#" title="Ratio"><i class="glyphicon crop"></i></a></li>	
+	<li><a data-key-index="1" id="back" href="#" data-language-title="menuBack" title="Back"><i class="glyphicon circle-arrow-left"></i></a></li>
+	<li><a data-key-index="2" id="info" href="#" data-language-title="menuInfo" title="Info"><i class="glyphicon circle-info"></i></a></li>
+	<li><a data-key-index="3" id="qmenu" href="#" data-language-title="menuQMENU" title="QMENU"><i class="glyphicon cogwheel"></i></a></li>	
+	<li><a data-key-index="4" id="ratio" href="#" data-language-title="menuRatio" title="Ratio"><i class="glyphicon crop"></i></a></li>	
 </ul>
 </div>
 <div id="controls" style="display: none;">
@@ -47,17 +50,17 @@ $(document).ready(function() {
 		<div id="progressTime"></div>
 	</div>
 	<ul class="buttons">
-		<li><a data-key-index="5" id="stop" href="#" title="Stop"><i class="glyphicon stop"></i></a></li>		
-		<li><a data-key-index="6" id="skipBackward" href="#" title="Rewind"><i class="glyphicon rewind"></i></a></li>
-		<li><a data-key-index="7" id="pause" href="#" class="selected" title="Pause"><i class="glyphicon pause"></i></a></li>		
-		<li><a data-key-index="8" id="play" href="#" title="Play"><i class="glyphicon play"></i></a></li>	
-		<li><a data-key-index="9" id="skipForward" href="#" title="Forward"><i class="glyphicon forward"></i></a></li>			
+		<li><a data-key-index="5" id="stop" href="#" data-language-title="menuStop" title="Stop"><i class="glyphicon stop"></i></a></li>		
+		<li><a data-key-index="6" id="skipBackward" href="#" data-language-title="menuRewind" title="Rewind"><i class="glyphicon rewind"></i></a></li>
+		<li><a data-key-index="7" id="pause" href="#" class="selected" data-language-title="menuPause" title="Pause"><i class="glyphicon pause"></i></a></li>		
+		<li><a data-key-index="8" id="play" href="#" data-language-title="menuPlay" title="Play"><i class="glyphicon play"></i></a></li>	
+		<li><a data-key-index="9" id="skipForward" href="#" data-language-title="menuForward" title="Forward"><i class="glyphicon forward"></i></a></li>			
 	</ul>
 </div>
 <div id="optionsRight" class="options">
 <ul>
-	<li><a data-key-index="10" id="language" href="#" title="Audio Language" style="display: none;"><i class="glyphicon globe-af"></i></a></li>
-	<li><a data-key-index="11" id="subtitles" href="#" title=Subtitles style="display: none;"><i class="glyphicon chat"></i></a></li>	
+	<li><a data-key-index="10" id="language" href="#" data-language-title="menuAudio" title="Audio Language" style="display: none;"><i class="glyphicon globe-af"></i></a></li>
+	<li><a data-key-index="11" id="subtitles" href="#" data-language-title="menuSubtitles" title=Subtitles style="display: none;"><i class="glyphicon chat"></i></a></li>	
 </ul>
 </div>
 <div id="message" style="display: none;"></div>

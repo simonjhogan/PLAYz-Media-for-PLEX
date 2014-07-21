@@ -49,7 +49,7 @@ function Menu() {
 		html += "<tr><th>SW Version</th><td>" + device.hwVersion + "</td></tr>";		
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
-		
+		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
 		}
@@ -92,18 +92,22 @@ function Menu() {
 		self.serverSelection();
 	});
 	
-	$(document).keypress(function(event) {
-		// Reset settings - RED button or q key
-		if (event.which == 403 || event.which == 81) {
+	$(document).keydown(function(event) {
+		// Reset settings - RED button or ( key
+		if (event.which == 403 || event.which == 122) {
 			if (confirm("Press OK to RESET settings ...")) {
 				self.plex.removeServerUrl();
 				location.reload();
 			}
 		}	
 		
-		if (event.which == 404 || event.which == 83) {
+		if (event.which == 404 || event.which == 123) {
 			self.serverSelection();
 		}
+		
+		if (event.which == 461 || event.which == 27) {
+			self.close();
+		}		
 	});
 	
 	$("#settings").hide();
@@ -181,7 +185,7 @@ Menu.prototype.initialise = function(focus)	{
 		self.hideLoader();
 		this.settingsDialog(true);
 		$("#settingsMessage").show();
-		$("#settingsMessage").html("Please enter a valid PMS address ...<br/>example: 192.168.0.1:32400");
+		$("#settingsMessage").html(settings.language.dialogSettingsValidMessage);
 		$("#settingsMessage").fadeOut(5000);		
 	} else {		
 		self.plex.checkLibraryServerExists(function(xml) {
@@ -200,8 +204,9 @@ Menu.prototype.initialise = function(focus)	{
 					$("#sections ul").append(html);
 				});
 		
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+1) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>On Deck</a></li>");
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>Search</a></li>");
+				$("#sections ul").append("<li><a data-key-index=\"" + (i+1) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>" + settings.language.sectionOnDeck + "</a></li>");
+				//$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"channels\" data-key=\"channels\" data-section-type=\"channels\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>" + settings.language.sectionChannels + "</a></li>");
+				$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>" + settings.language.sectionSearch + "</a></li>");
 				
 		
 				// Add Event Handlers
@@ -337,6 +342,7 @@ Menu.prototype.initialise = function(focus)	{
 					case "photo":	
 					case "show":			
 					case "artist":	
+					case "channels":							
 						self.showLoader("Loading");
 						location.href = "media.html?action=view&section=" + event.sectionType + "&key=" + event.key;
 						break;
@@ -377,6 +383,7 @@ Menu.prototype.initialise = function(focus)	{
 					case "show":			
 					case "artist":
 					case "ondeck":	
+					case "channels":							
 						localStorage.setItem(self.PLEX_CURRENT_SECTION, event.key);	
 						self.quickSelectionMenu(event);
 						break;							
@@ -387,7 +394,7 @@ Menu.prototype.initialise = function(focus)	{
 			self.hideLoader();			
 			self.settingsDialog(true);
 			$("#settingsMessage").show();
-			$("#settingsMessage").text("The PMS server was not found on the address specified!");
+			$("#settingsMessage").html(settings.language.dialogSettingsAddressNotFoundMessage);
 			$("#settingsMessage").fadeOut(5000);
 		});
 	}
@@ -430,8 +437,15 @@ Menu.prototype.quickSearchMenu = function(event)
 				event.preventDefault();
 			}
 		}
+		
+		// Back
+		if (event.which == 461 || event.which == 27) {		
+			$("#navigator a.selected").focus();
+			window.NetCastSystemKeyboardVisible(false);
+			event.preventDefault();
+			event.stopPropagation();				
+		}		
 	});	
-	
 };
 
 Menu.prototype.quickSelectionMenu = function(event)
@@ -440,7 +454,8 @@ Menu.prototype.quickSelectionMenu = function(event)
 	var maxItems = 30;
 	
 	self.showLoader("Loading");
-			
+	//console.log(">>" + event.sectionType);
+	
 	self.plex.getMediaItems(event.sectionType, event.key, function(xml) {
 		var sectionType = event.sectionType;
 		var sectionKey = event.key;
@@ -473,6 +488,12 @@ Menu.prototype.quickSelectionMenu = function(event)
 		$("#recentlyAdded").attr("data-current-key", event.key);
 		$("#recentlyAdded").show();
 		$("#recentlyAdded").addClass("show-quick-menu");
+		
+		if (sectionType == "channels") {
+			$("#recentlyAdded .name").html(settings.language.sectionChannels);
+		} else {
+			$("#recentlyAdded .name").html(settings.language.menuRecentlyAdded);	
+		}
 		
 		$("#recentlyAdded a").hover(function() {
 			$(this).focus();
@@ -593,6 +614,10 @@ Menu.prototype.quickSelectionMenu = function(event)
 					});
 					break
 				
+				case "channel":
+					//Do nothing
+					break;
+					
 				default:
 					self.plex.getMediaMetadata($(this).data("key"), function(xml) { 
 						var metadata = $(xml).find("Directory:first,Video:first,Photo:first,Track:first");
@@ -616,7 +641,10 @@ Menu.prototype.quickSelectionMenu = function(event)
 			var index = $(this).data("key-index");
 			var previous = $(this).parents(".content").find("ul li a[data-key-index='" + (Number(index)-1) + "']");
 			var next = $(this).parents(".content").find("ul li a[data-key-index='" + (Number(index)+1) + "']");
-	
+			var length = $(this).parents(".content").find("ul li").length;
+			//console.log(index + " ... " + length + " : " + (index*142-142));
+			//console.log($("#recentlyAdded .content").scrollLeft());
+			
 			// Left Arrow
 			if (event.which == 37) {
 				event.preventDefault();
@@ -624,17 +652,21 @@ Menu.prototype.quickSelectionMenu = function(event)
 					$("#recentlyAdded .content").scrollLeft(0);
 					$("#preview").fadeOut();
 					$("#navigator #sections a.selected").focus();
-				} else if (index == 1) {
-					$("#recentlyAdded .content").scrollLeft(0);
-					previous.focus();
-				} else {
-					previous.focus();
+				} 
+				
+				if (index < length-3) {
+					$("#recentlyAdded .content").scrollLeft((index-2)*142-142);
 				}
+				previous.focus();
 			}
 			
 			// Right Arrow - Quick Select
 			if (event.which == 39) {
 				event.preventDefault();
+				if (index >= 2) {
+					$("#recentlyAdded .content").scrollLeft(index*142-142);
+				}
+				
 				next.focus();
 			}
 			
@@ -826,6 +858,13 @@ Menu.prototype.optionsDialog = function(event)
 				$($(this).data("keyRight")).focus();
 				event.preventDefault();
 			}
+		}
+		
+		//Back
+		if (event.which == 461 || event.which == 27) {		
+			$("#navigator a.selected").focus();
+			event.preventDefault();
+			event.stopPropagation();				
 		}		
 	});	
 	
@@ -878,7 +917,7 @@ Menu.prototype.settingsDialog = function(init)
 		}		
 	});
 	
-	$("#settingsMessage").text("");
+	$("#settingsMessage").html("");
 	var pms = this.plex.getServerUrl();
 	
 	if (pms) {
@@ -894,7 +933,7 @@ Menu.prototype.settingsDialog = function(init)
 		
 		if (pms.indexOf("http") > -1) {
 			$("#settingsMessage").show();
-			$("#settingsMessage").text("Remove 'http://' from the server address!");
+			$("#settingsMessage").html(settings.language.dialogSettingsRemoveMessage);
 			$("#settingsMessage").fadeOut(5000);
 			return false;
 		}
@@ -916,19 +955,19 @@ Menu.prototype.settingsDialog = function(init)
 		}
 		
 		self.showLoader("Scanning");
-		$("#settingsMessage").text("");
+		$("#settingsMessage").html("");
 		$("#settingsMessage").show();
 		self.plex.scanNetwork(ip, function(xml) {
 			self.scanFoundCount++;
 			$("#pms").val(this.url.substr(this.url.indexOf("://")+3));
 			servers.push($(xml).find("MediaContainer:first").attr("friendlyName") + "|" + this.url);
-			$("#settingsMessage").text("PMS found at: " + this.url + " " + $(xml).find("MediaContainer:first").attr("friendlyName"));
+			$("#settingsMessage").html(settings.language.dialogSettingsFoundMessage + this.url + " " + $(xml).find("MediaContainer:first").attr("friendlyName"));
 			$("#settingsMessage").fadeOut(3000);
 			self.showLoader("PMS found");
 		},function() {
 			self.scanErrorCount++;
 			if (self.scanErrorCount >= 255) {
-				$("#settingsMessage").text("PMS not found on local network!");
+				$("#settingsMessage").html(settings.language.dialogSettingsNotFoundMessage);
 				$("#settingsMessage").fadeOut(3000);
 				self.showLoader("Error");
 			}					
@@ -936,7 +975,7 @@ Menu.prototype.settingsDialog = function(init)
 			localStorage.setItem(self.PLEX_SERVER_LIST, servers.unique().join(","));
 			
 			if (servers.unique().length > 1) {	
-				$("#settingsMessage").text("Multiple instances of PMS found.");
+				$("#settingsMessage").html(settings.language.dialogSettingsMultipleMessage);
 				$("#settingsMessage").fadeOut(3000);				
 			}
 			self.hideLoader();
@@ -997,7 +1036,7 @@ Menu.prototype.settingsDialog = function(init)
 		if (event.which == 37) {
 			if ($(this).data("keyLeft")) {
 				$($(this).data("keyLeft")).focus();
-				event.preventDefault();
+				//event.preventDefault();
 			}
 		}
 		
@@ -1005,8 +1044,15 @@ Menu.prototype.settingsDialog = function(init)
 		if (event.which == 39) {
 			if ($(this).data("keyRight")) {
 				$($(this).data("keyRight")).focus();
-				event.preventDefault();
+				//event.preventDefault();
 			}
+		}
+		
+		//Back
+		if (event.which == 461 || event.which == 27) {	
+			$("#navigator a.selected").focus();		
+			event.preventDefault();
+			event.stopPropagation();			
 		}		
 	});	
 	
@@ -1024,7 +1070,7 @@ Menu.prototype.setClock = function()
 	try {
 		var device = document.getElementById("device");
 		
-		if (device.getLocalTime) {
+		/*if (device.getLocalTime) {
 			var now = device.getLocalTime();
 			var hours = now.hour;
 			var minutes = now.minute;
@@ -1040,10 +1086,10 @@ Menu.prototype.setClock = function()
 				hours = hours ? hours : 12; // hour '0' should be '12'
 				$("#clock").text(hours + ':' + minutes + ":" + seconds + ' ' + ampm);
 			}
-		} else {
+		} else {*/
 			var now = new Date();
 			$("#clock").text(now.toLocaleTimeString());
-		}
+		//}
 	
 		if (self.debug) {
 			if (window.NetCastGetUsedMemorySize) {
@@ -1070,8 +1116,9 @@ Menu.prototype.hideLoader = function()
 
 Menu.prototype.close = function()
 {
+	//alert("Close...");
 	if (window.NetCastExit) {
-		window.NetCastExit();
+		window.NetCastBack();
 	} else {
 		window.close();
 	}

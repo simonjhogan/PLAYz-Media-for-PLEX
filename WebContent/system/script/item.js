@@ -42,6 +42,7 @@ MediaMetadata.prototype.initialise = function()
 		html += "<tr><th>SW Version</th><td>" + device.hwVersion + "</td></tr>";		
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
+		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
 		
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
@@ -137,7 +138,7 @@ MediaMetadata.prototype.initialise = function()
 				self.summaryScroll = setInterval(function() {
 					clearInterval(self.summaryScroll);
 					self.summaryScroll = setInterval(function() {
-						if (top <= $(".summary")[0].scrollHeight -  $(".summary").height() + 20) {
+						if (top <= $(".summary")[0].scrollHeight -  $(".summary").height() + 40) {
 							$(".summary").scrollTop(top+=1);
 						} else {
 							top = -2;
@@ -146,6 +147,24 @@ MediaMetadata.prototype.initialise = function()
 					}, 100);
 				},2000);
 			}
+		}
+		
+		
+		if ($(".title").length > 0) {
+			var left = 0;
+			clearInterval(self.tScroll);
+			self.tScroll = setInterval(function() {
+				$(".title").css("textOverflow", "clip");
+				clearInterval(self.tScroll);
+				self.tScroll = setInterval(function() {
+					//console.log(left + " <= " + $(".title")[0].scrollWidth);
+					if (left <= $(".title")[0].scrollWidth - $(".title").width() + 40 ) {
+						$(".title").scrollLeft(left+=2);
+					} else {
+						left = 0;	
+					}
+				}, 100);
+			},1000);			
 		}
 		
 		if (localStorage.getItem(self.PLEX_OPTIONS_PREFIX + "themeMusic") != "1") {
@@ -310,8 +329,8 @@ MediaMetadata.prototype.getMediaChildren = function(mediaType, key) {
 		$("#children li a").focus(function(event) {
 			var item = $(this);
 			var left = 0;
-			
-			if ($(self).find(".subtitle").length > 0) {
+			console.log("focus");
+			if (item.find(".subtitle").length > 0) {
 				clearInterval(self.titleScroll);
 				self.titleScroll = setInterval(function() {
 					item.find(".subtitle").css("textOverflow", "clip");
@@ -325,12 +344,29 @@ MediaMetadata.prototype.getMediaChildren = function(mediaType, key) {
 					}, 100);
 				},1000);
 			}
+			
+			if (item.find(".track-title").length > 0) {
+				clearInterval(self.titleScroll);
+				self.titleScroll = setInterval(function() {
+					item.find(".track-title").css("textOverflow", "clip");
+					clearInterval(self.titleScroll);
+					self.titleScroll = setInterval(function() {
+						if (left <= item.find(".track-title")[0].scrollWidth) {
+							item.find(".track-title").scrollLeft(left+=2);
+						} else {
+							clearInterval(self.titleScroll);	
+						}
+					}, 100);
+				},1000);
+			}			
 		});
 
 		$("#children li a").blur(function(event) {
 			clearInterval(self.titleScroll);	
 			$(this).find(".subtitle").scrollLeft(0);
 			$(this).find(".subtitle").css("textOverflow", "ellipsis");
+			$(this).find(".track-title").scrollLeft(0);
+			$(this).find(".track-title").css("textOverflow", "ellipsis");			
 		});
 		
 		$("#children li a").click(function(event) {

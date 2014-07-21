@@ -10,11 +10,14 @@
 <script src="system/script/jquery.tooltips.min.js"></script>
 <script src="system/script/plex.js"></script>
 <script src="system/script/media.js"></script>
+<script src="system/script/language.js"></script>
 
 <script>
 $(document).ready(function() {
-	myMedia = new Media();
-	myMedia.initialise();
+	languageInit(function() {
+		myMedia = new Media();
+		myMedia.initialise();
+	});
 });
 </script>
 
@@ -29,16 +32,16 @@ $(document).ready(function() {
 	<div id="menuBar">
 		<div id="menu">
 			<ul>
-				<li><a id="back" data-key-down="#home" data-key-right="#mediaViewContent a:first" href="javascript:history.back();" title="Back"><i class="glyphicon left-arrow"></i></a></li>
-				<li><a id="home" data-key-up="#back" data-key-down="#filter" data-key-right="#mediaViewContent a:first" href="index.html" title="Home"><i class="glyphicon home"></i></a></li>		
-				<li><a id="filter" data-key-up="#home" data-key-right="#mediaViewContent a:first" href="javascript:myMedia.toggleMenu();" title="Menu"><i class="glyphicon show-thumbnails-with-lines"></i></a></li>					
+				<li><a id="back" data-key-down="#home" data-key-right="#mediaViewContent a:first" href="javascript:history.back();" data-language-title="menuBack" title="Back"><i class="glyphicon left-arrow"></i></a></li>
+				<li><a id="home" data-key-up="#back" data-key-down="#filter" data-key-right="#mediaViewContent a:first" href="index.html" data-language-title="menuHome" title="Home"><i class="glyphicon home"></i></a></li>		
+				<li><a id="filter" data-key-up="#home" data-key-right="#mediaViewContent a:first" href="javascript:myMedia.toggleMenu();" data-language-title="menuMenu" title="Menu"><i class="glyphicon show-thumbnails-with-lines"></i></a></li>					
 			</ul>
 		</div>
 		<div id="menuFilter" style="display: none;">
 			<div id="menuFilterView">
 			<ul>
-				<li><a id="thumbsView" data-key-down="#menuFilterContent a[data-key-index='0']" data-key-right="#listView" href="" title="Thumbs"><i class="glyphicon show-big-thumbnails"></i></a></li>
-				<li><a id="listView" data-key-down="#menuFilterContent a[data-key-index='0']" data-key-right="#filter" data-key-left="#thumbsView" href="" title="List"><i class="glyphicon show-lines"></i></a></li>
+				<li><a id="thumbsView" data-key-down="#menuFilterContent a[data-key-index='0']" data-key-right="#listView" href="" data-language-title="menuThumbs" title="Thumbs"><i class="glyphicon show-big-thumbnails"></i></a></li>
+				<li><a id="listView" data-key-down="#menuFilterContent a[data-key-index='0']" data-key-right="#filter" data-key-left="#thumbsView" href="" data-language-title="menuList" title="List"><i class="glyphicon show-lines"></i></a></li>
 			</ul>
 			</div>
 			<div id="menuFilterContent" class="content"><ul></ul></div>

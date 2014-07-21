@@ -53,6 +53,7 @@ Player.prototype.initialise = function()
 		html += "<tr><th>SW Version</th><td>" + device.hwVersion + "</td></tr>";		
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
+		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
 		
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
@@ -74,7 +75,14 @@ Player.prototype.initialise = function()
 				$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
 				$("#message").show();
 				$("#message").fadeOut(3000);
-				self.plex.reportProgress(self.mediaKey, "stopped", self.media.playPosition);			
+				self.plex.reportProgress(self.mediaKey, "stopped", self.media.playPosition);	
+				self.plex.getTimeline(self.mediaKey, "stopped", 0, 0);
+				
+				if ((self.media.playTime/self.media.playPosition) >= 0.9) {
+					self.setWatchedStatus(self.mediaKey, self.media.playTime, self.media.playPosition);
+					self.plex.reportProgress(self.mediaKey, "stopped", 0);
+					self.plex.getTimeline(self.mediaKey, "stopped", 0, 0);
+				}				
 				break;
 				
 			case 1: //Playing
@@ -768,6 +776,7 @@ Player.prototype.stop = function()
 	//$("#play").focus();
 	clearInterval(this.timer);	
 	this.media.stop();	
+	history.back(1);
 };
 
 Player.prototype.seek = function(timeMS)

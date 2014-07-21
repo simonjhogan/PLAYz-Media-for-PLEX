@@ -10,11 +10,14 @@
 <script src="system/script/jquery.tooltips.min.js"></script>
 <script src="system/script/plex.js"></script>
 <script src="system/script/item.js"></script>
+<script src="system/script/language.js"></script>
 
 <script>
 $(document).ready(function() {
-	metadata = new MediaMetadata();
-	metadata.initialise();
+	languageInit(function() {
+		metadata = new MediaMetadata();
+		metadata.initialise();
+	});
 });
 </script>
 
@@ -29,12 +32,12 @@ $(document).ready(function() {
 	<div id="menuBar">
 		<div id="menu">
 			<ul>
-				<li><a id="back" data-key-down="#home" data-key-right="#children a:first" href="javascript:history.back();" title="Back"><i class="glyphicon left-arrow"></i></a></li>
-				<li><a id="home" data-key-up="#back" data-key-down="#play" data-key-right="#children a:first" href="index.html" title="Home"><i class="glyphicon home"></i></a></li>		
-				<li><a id="play" data-key-up="#home" data-key-down="#audio" data-key-right="#children a:first" href="" title="Play" style="display: none;"><i class="glyphicon play"></i></a></li>	
-				<li><a id="audio" data-key-up=#play data-key-down="#subtitles" data-key-right="#children a:first" href="" title="Audio selection" style="display: none;"><i class="glyphicon adjust-alt"></i></a></li>	
-				<li><a id="subtitles" data-key-up="#audio" data-key-down="#watched" data-key-right="#children a:first" href="" title="Subtitles" style="display: none;"><i class="glyphicon conversation"></i></a></li>	
-				<li><a id="watched" data-key-up="#subtitles" data-key-right="#children a:first" href="" title="Watched status" style="display: none;"><i class="glyphicon ok"></i></a></li>							
+				<li><a id="back" data-key-down="#home" data-key-right="#children a:first" href="javascript:history.back();" data-language-title="menuBack" title="Back"><i class="glyphicon left-arrow"></i></a></li>
+				<li><a id="home" data-key-up="#back" data-key-down="#play" data-key-right="#children a:first" href="index.html" data-language-title="menuHome" title="Home"><i class="glyphicon home"></i></a></li>		
+				<li><a id="play" data-key-up="#home" data-key-down="#audio" data-key-right="#children a:first" href="" data-language-title="menuPlay" title="Play" style="display: none;"><i class="glyphicon play"></i></a></li>	
+				<li><a id="audio" data-key-up=#play data-key-down="#subtitles" data-key-right="#children a:first" href="" data-language-title="menuAudio" title="Audio selection" style="display: none;"><i class="glyphicon adjust-alt"></i></a></li>	
+				<li><a id="subtitles" data-key-up="#audio" data-key-down="#watched" data-key-right="#children a:first" href="" data-language-title="menuSubtitles" title="Subtitles" style="display: none;"><i class="glyphicon conversation"></i></a></li>	
+				<li><a id="watched" data-key-up="#subtitles" data-key-right="#children a:first" href="" data-language-title="menuWatchedStatus" title="Watched status" style="display: none;"><i class="glyphicon ok"></i></a></li>							
 			</ul>
 		</div>	
 	</div>

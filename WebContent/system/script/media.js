@@ -59,6 +59,7 @@ Media.prototype.initialise = function()
 		html += "<tr><th>SW Version</th><td>" + device.hwVersion + "</td></tr>";		
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
+		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
 		
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
@@ -129,12 +130,16 @@ Media.prototype.initialise = function()
 	
 	switch($.querystring().action) {
 		case "view":
-			this.loadMenu(this.section, this.key);
+			if (this.section == "channels") {
+				$("#filter").hide();
+			} else {
+				this.loadMenu(this.section, this.key);
+			}
 			this.view(this.section, this.key, this.filter, this.filterKey);	
 			break;
 			
 		case "search":
-			$("filter").hide();
+			$("#filter").hide();
 			this.view(this.section, this.key, "search", this.query);		
 			break;			
 	}
@@ -303,16 +308,24 @@ Media.prototype.view = function(section, key, filter, filterKey)
 	self.plex.getSectionMedia(key, filter, filterKey, function(xml) {
 		var $container = $(xml).find("MediaContainer:first");
 		$("#title").show();
-		
+		console.log(filter);
 		switch(filter) {
 			case "all":
-				$("#title").text($container.attr("title2"));
+				if (key == "channels") {
+					$("#title").text("Channels");
+				} else {
+					$("#title").text($container.attr("title2"));
+				}
 				break;
 
 			case "search":
-				$("#title").text("Results for \"" + filterKey + "\"");
+				if (filterKey.indexOf("%") > -1) {
+					$("#title").text("Search Results");
+				} else {
+					$("#title").text("Results for \"" + filterKey + "\"");
+				}
 				break;
-						
+				
 			default:
 				$("#title").text($container.attr("title1") + " - " + $container.attr("title2"));
 				break;
@@ -471,7 +484,7 @@ Media.prototype.view = function(section, key, filter, filterKey)
 			if ($("#mediaView li a").length > 0) {
 				$("#mediaView li a:first").focus();
 			} else {
-				$("#mediaViewContent").html("<p class=\"centered\">Empty view</p");
+				$("#mediaViewContent ul").html("<p class=\"centered\">Empty view</p");
 				$("#back").focus();	
 			}
 		}

@@ -88,6 +88,7 @@ PLEX.prototype.getSectionDetails = function(key, callback) {
 
 PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback) {
 	var jsonCallback = 'callback' + new Date().getTime();
+	var self = this;
 	
 	if (filterKey) {
 		switch(filter) {
@@ -110,13 +111,13 @@ PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback) {
 				break;
 		}
 	} else {
-		$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time, callback);		
+		if (key == "channels") {
+			self.getChannels(key, callback);
+		} else {
+			$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time, callback);	
+		}
 	}
 };
-
-/*PLEX.prototype.getOnDeck = function(key, callback) {
-	$.get(this.getServerUrl() + "/library/sections/" + key + "/onDeck?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
-};*/
 
 PLEX.prototype.getRecentlyAdded = function(key, callback) {
 	$.get(this.getServerUrl() + "/library/sections/" + key + "/recentlyAdded?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
@@ -126,12 +127,24 @@ PLEX.prototype.getOnDeck = function(key, callback) {
 	$.get(this.getServerUrl() + "/library/onDeck?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
 };
 
+PLEX.prototype.getChannels = function(key, callback) {
+	$.get(this.getServerUrl() + "/channels/all", callback);
+};
+
 //Helper function for main menu
 PLEX.prototype.getMediaItems = function(section, key, callback) {
-	if (section == "ondeck") {
-		this.getOnDeck(key, callback);
-	} else {
-		this.getRecentlyAdded(key, callback);
+	switch (section) {
+		case "ondeck": 
+			this.getOnDeck(key, callback);
+			break;
+		
+		case "channels":
+			this.getChannels(key, callback);
+			break;
+			
+		default:
+			this.getRecentlyAdded(key, callback);
+			break;
 	}
 };
 
@@ -169,8 +182,12 @@ PLEX.prototype.setSubtitleStream = function(partKey, streamKey) {
 	});
 };
 
-PLEX.prototype.getTranscodedPath = function(path, width, height) {
-	return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent("http://localhost:" + this.getServerPort() + path) + "&width=" + width + "&height=" + height;
+PLEX.prototype.getTranscodedPath = function(path, width, height, remote) {
+	if (remote) {
+		return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent(path) + "&width=" + width + "&height=" + height;		
+	} else {
+		return this.getServerUrl() + "/photo/:/transcode?url=" + encodeURIComponent("http://localhost:" + this.getServerPort() + path) + "&width=" + width + "&height=" + height;
+	}
 };
 
 PLEX.prototype.getTranscodedMediaFlagPath = function(flag, value, width, height) {
@@ -185,7 +202,7 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 	if (sectionType && sectionType.indexOf("home") > -1) {
 		mediaType = "home";
 	}
-		
+	
 	switch(mediaType) {	
 		case "movie":
 			html = "<li class=\"media " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" data-media=\"" + metadata.media + "\" href>";
@@ -246,6 +263,13 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 			html += "<div class=\"subtitle alt\">" + title + "</div>";			
 			html += "</a></li>";	
 			break;
+	
+		case "channel":
+			html = "<li class=\"media " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" href>";
+			html += "<div class=\"thumb\" data-original=\"" + this.getTranscodedPath(metadata.thumb, 128, 190, true) + "\"></div>";
+			html += "<div class=\"subtitle alt\">" + title + "</div>";			
+			html += "</a></li>";	
+			break;			
 			
 		case "album":				
 			html = "<li class=\"media " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-parent-key=\"" + metadata.parentKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" href>";
@@ -454,7 +478,9 @@ PLEX.prototype.getMediaPreviewHtml = function(xml) {
 			html += "</div>";
 			
 			html += "<div class=\"rightColumn\">";								
-			html += "<div class=\"cover\" style=\"background-image: url('" + this.getTranscodedPath(mediaItem.attr("thumb"), 800, 600) + "')\"></div>";
+			html += "<div class=\"cover\">";
+			html += "<img class=\"photo\" src=\"" + this.getTranscodedPath(mediaItem.find("Part").attr("key"), 800, 600) + "\"/>";
+			html += "</div>";
 			html += "</div>";
 			break;
 			

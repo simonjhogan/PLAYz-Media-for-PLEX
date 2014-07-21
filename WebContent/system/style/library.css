@@ -7,7 +7,7 @@
 }
 
 body.xlarge {
-	font-size: 28px;	
+	font-size: 26px;	
 }
 
 #applicationWallpaper {
@@ -234,7 +234,7 @@ body.xlarge {
 }
 
 .media-quick-menu .content::-webkit-scrollbar {
-	height: 1px;
+	height: 4px;
 	width: 0px;	
 }
 
@@ -330,7 +330,7 @@ li.media a:focus {
 
 li.track, li.list {
 	margin: 0px;
-	width: 90%;	
+	width: 780px;	
 	padding: 2px;
 	list-style: none;
 }
@@ -345,6 +345,17 @@ li.track a, li.list a {
 	border-radius: 5px;	
     outline: none;
     border: 2px solid transparent;  	
+}
+
+.track-title {
+	white-space: nowrap;	
+	overflow: hidden;	
+	text-overflow: ellipsis;  
+	width: 770px;	
+}
+
+.ellipsis {
+	text-overflow: ellipsis !important;	
 }
 
 /*li.track:nth-child(even) a, li.list:nth-child(even) a {
@@ -448,7 +459,7 @@ li.track a:focus, li.list a:focus  {
 	font-size: 90%;
 	overflow: hidden;
 	overflow: hidden;
-	max-height: 150px;
+	max-height: 130px;
 }
 
 .content .time {
@@ -823,6 +834,7 @@ li.track a:focus, li.list a:focus  {
 	-webkit-background-size: cover;
 	background-image: none;
 	background-position: center center;	
+	text-align: center;
 }
 
 .leftColumn .media {
@@ -1237,7 +1249,7 @@ li.track .playing {
 	position: absolute;
 	bottom: 30px;	
 	background-color: rgba(3,3,3,0.5);  
-	width: 200px;		
+	width: 196px;		
 }
 
 #children li.episode a div.alt {
@@ -1256,7 +1268,7 @@ li.track .playing {
 	position: absolute;
 	bottom: 5px;	
 	background-color: rgba(3,3,3,0.5);  
-	width: 200px;				
+	width: 196px;				
 }
 
 #children li.episode a:focus {

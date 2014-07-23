@@ -225,7 +225,7 @@ body.xlarge {
 	border-radius: 0px 5px 5px 0px; 
 	color: #fff; 
 	overflow: hidden;  
-	width: 880px;
+	right: 20px;
     padding: 1px 5px;        
 /*    
 	width: 0px; 
@@ -247,7 +247,7 @@ body.xlarge {
 	height: 210px;
     -webkit-box-sizing: border-box;  	
     padding: 2px;
-	width: 860px;    
+	//width: 860px;    
 }
 
 .media-quick-menu .content::-webkit-scrollbar {

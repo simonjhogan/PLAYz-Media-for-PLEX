@@ -22,7 +22,7 @@
         "dialogHelpPMS":"PLEX Media Server se može skinuti sa https://plex.tv",
         "dialogSettings":"Postavke",
         "dialogSettingsPrompt":"Unesite IP adresu i port PLEX Media Servera (PMS)",
-        "dialogSettingsScan":"Skeniraj",
+        "dialogSettingsScan":"Pretraži",
         "dialogSettingsSave":"Sačuvaj",   
         "dialogSettingsValidMessage":"Unesite ispravnu adresu PMS servera ...<br/>npr.: 192.168.0.1:32400", 
         "dialogSettingsNotFoundMessage":"PMS nije pronađen na lokalnoj mreži!",

@@ -26,6 +26,9 @@ function Menu() {
 	this.toggleActive = false;
 	this.titleScroll;
 	this.scanErrorCount = 0;
+	this.windowHeight = $(window).height();
+	this.windowWidth = $(window).width();
+	
 	var self = this;
 
 	//Enable page loading icon
@@ -208,14 +211,14 @@ Menu.prototype.initialise = function(focus)	{
 				
 				$(xml).find("Directory").each(function(index, item) {
 					html = "<li><a data-key-index=\"" + index + "\" data-title=\"" + $(this).attr("title") + "\" data-key=\"" + $(this).attr("key") + "\" data-section-type=\"" + 
-							$(this).attr("type") + "\" data-art=\"" + self.plex.getTranscodedPath($(this).attr("art"), 1280, 720) + "\" href>" +  $(this).attr("title")  + "</a></li>";	
+							$(this).attr("type") + "\" data-art=\"" + self.plex.getTranscodedPath($(this).attr("art"), self.windowWidth, self.windowHeight) + "\" href>" +  $(this).attr("title")  + "</a></li>";	
 					i = index;		
 					$("#sections ul").append(html);
 				});
 		
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+1) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>" + settings.language.sectionOnDeck + "</a></li>");
-				//$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"channels\" data-key=\"channels\" data-section-type=\"channels\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>" + settings.language.sectionChannels + "</a></li>");
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", 1280, 720) + "\" href>" + settings.language.sectionSearch + "</a></li>");
+				$("#sections ul").append("<li><a data-key-index=\"" + (i+1) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionOnDeck + "</a></li>");
+				//$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"channels\" data-key=\"channels\" data-section-type=\"channels\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionChannels + "</a></li>");
+				$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionSearch + "</a></li>");
 				
 		
 				// Add Event Handlers

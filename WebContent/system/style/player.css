@@ -49,8 +49,8 @@ body.xlarge {
 
 #loader {
 	position: absolute;
-	top: 610px;
-	left: 1070px;
+	bottom: 40px;
+	right: 40px;
 	width: 150px;
 	text-align: center;
 	border-radius: 5px;

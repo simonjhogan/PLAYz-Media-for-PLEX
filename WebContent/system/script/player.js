@@ -84,14 +84,7 @@ Player.prototype.initialise = function()
 				$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
 				$("#message").show();
 				$("#message").fadeOut(3000);
-				self.plex.reportProgress(self.mediaKey, "stopped", self.media.playPosition);	
-				self.plex.getTimeline(self.mediaKey, "stopped", 0, 0);
-				
-				if ((self.media.playTime/self.media.playPosition) >= 0.9) {
-					self.setWatchedStatus(self.mediaKey, self.media.playTime, self.media.playPosition);
-					self.plex.reportProgress(self.mediaKey, "stopped", 0);
-					self.plex.getTimeline(self.mediaKey, "stopped", 0, 0);
-				}				
+				self.plex.reportProgress(self.mediaKey, "stopped", self.media.playPosition);			
 				break;
 				
 			case 1: //Playing
@@ -99,7 +92,7 @@ Player.prototype.initialise = function()
 					var t = setTimeout(function() {
 						self.seek(self.viewOffset);
 						self.hideLoader();
-					}, 3000);
+					}, 1000);
 					
 					self.resume = false;
 				}
@@ -127,13 +120,15 @@ Player.prototype.initialise = function()
 				
 			case 5: //Finished
 				clearInterval(self.timer);
-				self.setWatchedStatus(self.mediaKey, self.media.playTime, self.media.playPosition);
+				//self.plex.reportProgress(self.mediaKey, "stopped", 0);
+				var mediaGuid = $(self.cache).find("Video:first").attr("guid");
+				var mediaLength = $(self.cache).find("Video:first").attr("duration");
+				var mediaOffset = $(self.cache).find("Video:first").attr("viewOffset");
+				self.setWatchedStatus(self.mediaKey, mediaLength, mediaOffset);
+				self.plex.getTimeline(self.mediaKey, "stopped", 0, 0, encodeURIComponent(mediaGuid));
 
 				$("#message").html("Finished");
 				$("#message").show();
-				$("#message").fadeOut(3000);
-				$("#progressTime").text("");
-				
 				switch ($(self.cache).find("Video:first").attr("type")) {
 					case "episode":	
 						if (localStorage.getItem(self.PLEX_OPTIONS_PREFIX + "nextEpisode") == "1") {
@@ -156,6 +151,8 @@ Player.prototype.initialise = function()
 						history.back(1);
 						break;
 				}
+				$("#message").fadeOut(3000);
+				$("#progressTime").text("");
 				break;
 				
 			case 6: //Error
@@ -164,6 +161,11 @@ Player.prototype.initialise = function()
 				$("#message").html("Error: " + error);
 				$("#message").show();
 				$("#message").fadeOut(3000);			
+				if (this.directPlay == true) {
+					this.directPlay = false;
+					self.transcode = true;
+					this.openMedia(this.key);
+				}
 				break;
 				
 		}	
@@ -981,7 +983,7 @@ Player.prototype.getLanguageCode = function(code)
         if (code == 'pan') { return 'pa'; }; 
         if (code == 'per' || code == 'fas') { return 'fa'; }; 
         if (code == 'pol') { return 'pl'; }; 
-        if (code == 'por') { return 'pt'; }; 
+        if (code == 'por' || code == 'pob') { return 'pt'; }; 
         if (code == 'pus') { return 'ps'; }; 
         if (code == 'que') { return 'qu'; }; 
         if (code == 'roh') { return 'rm'; }; 

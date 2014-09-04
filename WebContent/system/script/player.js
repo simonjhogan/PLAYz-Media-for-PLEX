@@ -717,6 +717,8 @@ Player.prototype.play = function(speed)
 	this.progressCount = 30;
 	
 	//$("#pause").focus();	
+	
+	
 	this.media.play(speed);
 	this.timerControls();	
 	
@@ -811,13 +813,15 @@ Player.prototype.enableSubtitles = function(key)
 	}
 };
 
-Player.prototype.disableSubtitles = function()
+Player.prototype.disableSubtitles = function(hideMessage)
 {
 	this.media.subtitleOn = false;
 	this.media.subtitle = "";
-	$("#message").html("Subtitles Off");
-	$("#message").show();
-	$("#message").fadeOut(3000);	
+	if (!hideMessage) {
+		$("#message").html("Subtitles Off");
+		$("#message").show();
+		$("#message").fadeOut(3000);	
+	}
 };
 
 Player.prototype.setAudoLanguage = function(key, label)

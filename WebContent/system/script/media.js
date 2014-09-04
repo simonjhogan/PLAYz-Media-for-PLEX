@@ -27,8 +27,9 @@ function Media()
 	
 	this.viewStart = 0;
 	this.viewTotal = 0;
-	this.viewCount = 60;
+	this.viewSize = 60;
 	this.viewCurrent = 0;
+	
 		
 };
 
@@ -305,7 +306,7 @@ Media.prototype.loadMenu = function(section, key)
 	});	
 };
 
-Media.prototype.view = function(section, key, filter, filterKey)	
+Media.prototype.view = function(section, key, filter, filterKey, start)	
 {
 	this.rowCount = 0;
 	
@@ -498,7 +499,7 @@ Media.prototype.view = function(section, key, filter, filterKey)
 			}
 		}
 		self.hideLoader();
-	});
+	}, {"start":0,"size":this.viewSize});
 };	
 
 Media.prototype.showLoader = function(message)

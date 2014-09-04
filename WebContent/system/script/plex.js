@@ -95,35 +95,44 @@ PLEX.prototype.getSectionDetails = function(key, callback) {
 	$.get(this.getServerUrl() + "/library/sections/" + key , callback);
 };
 
-PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback) {
+PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback, options) {
 	var jsonCallback = 'callback' + new Date().getTime();
 	var self = this;
-	
+	var page = "";
+
+    options = options || {};
+    var start = options.start || -1;
+    var size = options.size  || -1;
+
+	/*if (start > -1) {
+		page = "&X-Plex-Container-Start=" + start + "&X-Plex-Container-Size=" + size;	
+	}*/
+
 	if (filterKey) {
 		switch(filter) {
 			case "folder": 
 			case "all": 
 				filter = decodeURIComponent(filterKey);
 				if (filter.indexOf("?") > -1) {
-					$.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time, callback);
+					$.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time + page, callback);
 				} else {
-					$.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time, callback);
+					$.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time + page, callback);
 				}
 				break;
 
 			case "search": 
-				$.get(this.getServerUrl() + "/search?query=" + filterKey , callback);
+				$.get(this.getServerUrl() + "/search?query=" + filterKey + page , callback);
 				break;
 								
 			default:
-				$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time, callback);		
+				$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time + page, callback);		
 				break;
 		}
 	} else {
 		if (key == "channels") {
 			self.getChannels(key, callback);
 		} else {
-			$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time, callback);	
+			$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time + page, callback);	
 		}
 	}
 };

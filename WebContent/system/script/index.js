@@ -1,5 +1,5 @@
 ﻿/**
-PLEX for LG Media Center
+PLAYz Media (PLEX for LG Media Center)
 
 Copyright 2014 Simon J. Hogan (Sith'ari Consulting)
 

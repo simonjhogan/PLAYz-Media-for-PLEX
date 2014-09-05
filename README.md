@@ -1,8 +1,8 @@
-PLEX for LG Home Theater
+PLAYz Media (formally PLEX for LG Home Theater)
 ==================================================================
-PLEX for LG Home Theater
+Bringing Plex to the LG Smart TV
 
-http://plex.sithari.com.au
+http://playz.sithari.com.au
 
 Created by Simon J. Hogan
 

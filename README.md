@@ -1,4 +1,4 @@
-![PLAYz Media](http://playz.sithari.com.au/system/images/plex.png)
+![PLAYz Media](http://playz.sithari.com.au/system/images/playz.png)
 ==================================================================
 Bringing Plex to the LG Smart TV (formally PLEX for LG Home Theater)
 

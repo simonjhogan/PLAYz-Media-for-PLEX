@@ -807,7 +807,7 @@ Player.prototype.enableSubtitles = function(key)
 		$("#message").fadeOut(3000);	
 	} else {
 		this.media.subtitleOn = true;
-		$("#message").html("Integrated Subtitles Not Supported!");
+		$("#message").html("Integrated Subtitles On");
 		$("#message").show();
 		$("#message").fadeOut(3000);		
 	}

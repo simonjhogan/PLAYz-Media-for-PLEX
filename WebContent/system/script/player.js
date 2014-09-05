@@ -415,7 +415,7 @@ Player.prototype.subtitleDialog = function()
 		event.preventDefault();
 		switch ($(this).data("key")) {
 			case "disabled":
-				self.plex.setSubtitleStream($(this).data("partKey"));
+				//self.plex.setSubtitleStream($(this).data("partKey"));
 				self.disableSubtitles();
 				break;
 			
@@ -816,7 +816,7 @@ Player.prototype.enableSubtitles = function(key)
 Player.prototype.disableSubtitles = function(hideMessage)
 {
 	this.media.subtitleOn = false;
-	this.media.subtitle = "";
+	//this.media.subtitle = "";
 	if (!hideMessage) {
 		$("#message").html("Subtitles Off");
 		$("#message").show();

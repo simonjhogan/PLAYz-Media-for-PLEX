@@ -101,12 +101,13 @@ PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback, opti
 	var page = "";
 
     options = options || {};
+    
     var start = options.start || -1;
     var size = options.size  || -1;
 
-	/*if (start > -1) {
-		page = "&X-Plex-Container-Start=" + start + "&X-Plex-Container-Size=" + size;	
-	}*/
+	if (typeof options.start !== 'undefined' & typeof options.size !== 'undefined') { 
+		page = "&X-Plex-Container-Start=" + options.start + "&X-Plex-Container-Size=" + options.size;	
+	}
 
 	if (filterKey) {
 		switch(filter) {
@@ -307,7 +308,7 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 		default:				
 			html = "<li class=\"media " + metadata.filter + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\"";
 			html += " data-key=\"" + key + "\" data-section-type=\"" + sectionType + "\" data-section-key=\"" + metadata.sectionKey + "\" data-media-type=\"folder\" data-filter=\"" + metadata.filter + "\" href>";
-			html += "<div class=\"thumb\" data-original=\"" + this.getTranscodedPath("/web/img/posters/folder.png", 128, 190) + "\"></div>";
+			html += "<div class=\"thumb\" data-original=\"./system/images/folder.png\"></div>";
 			html += "<div class=\"subtitle\">" + title + "</div>";			
 			html += "</a></li>";	
 			break;
@@ -418,7 +419,7 @@ PLEX.prototype.getMediaHtml = function(title, mediaType, metadata) {
 			if (metadata.year) { html += "<div class=\"time\">" + metadata.year + "</div>"; }				
 			if (metadata.artist) { html += "<div class=\"artist\">" + metadata.artist + "</div>"; }
 			if (metadata.tracks.length > 0) { html += "<div class=\"summary\">" + metadata.tracks.join("<br/>") + "</div>"; }		
-			if (metadata.thumb) { html += "<div class=\"cover\"><img src=\"" + this.getTranscodedPath(metadata.thumb, 128, 128) + "\"/></div>"; }		
+			if (metadata.thumb) { html += "<div class=\"cover\"><img src=\"" + this.getTranscodedPath(metadata.thumb, 100, 100) + "\"/></div>"; }		
 			break;
 	}
 	

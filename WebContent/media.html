@@ -34,7 +34,9 @@ $(document).ready(function() {
 			<ul>
 				<li><a id="back" data-key-down="#home" data-key-right="#mediaViewContent a:first" href="javascript:history.back();" data-language-title="menuBack" title="Back"><i class="glyphicon left-arrow"></i></a></li>
 				<li><a id="home" data-key-up="#back" data-key-down="#filter" data-key-right="#mediaViewContent a:first" href="index.html" data-language-title="menuHome" title="Home"><i class="glyphicon home"></i></a></li>		
-				<li><a id="filter" data-key-up="#home" data-key-right="#mediaViewContent a:first" href="javascript:myMedia.toggleMenu();" data-language-title="menuMenu" title="Menu"><i class="glyphicon show-thumbnails-with-lines"></i></a></li>					
+				<li><a id="filter" data-key-up="#home" data-key-down="#next" data-key-right="#mediaViewContent a:first" href="javascript:myMedia.toggleMenu();" data-language-title="menuMenu" title="Menu"><i class="glyphicon show-thumbnails-with-lines"></i></a></li>					
+				<li><a id="next" data-key-up="#filter" data-key-down="#prec" data-key-right="#mediaViewContent a:first" href="javascript:myMedia.nextPage();" data-language-title="menuMenu" title="Next Page"><i class="glyphicon chevron-right"></i></a></li>					
+				<li><a id="prev" data-key-up="#next" data-key-right="#mediaViewContent a:first" href="javascript:myMedia.prevPage();" data-language-title="menuMenu" title="Previous Page"><i class="glyphicon chevron-left"></i></a></li>					
 			</ul>
 		</div>
 		<div id="menuFilter" style="display: none;">

@@ -285,6 +285,7 @@ li.media a {
 	text-align: center;
 	text-decoration: none;
 	color: #fff;
+	background-color: rgba(50,50,50,0.7);
 	outline: none;
 	border-radius: 5px;	
     margin: auto;
@@ -679,9 +680,10 @@ li.track a:focus, li.list a:focus  {
 
 #previewContent .cover {
 	position: absolute;
-	bottom: 470px;
-	left: 10px;
+	top: 140px;
+	left: 240px;
 	color: #FF9900;
+	margin: 0px;
 }
 
 #previewClose {

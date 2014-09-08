@@ -27,7 +27,7 @@ function Media()
 	
 	this.viewStart = 0;
 	this.viewTotal = 0;
-	this.viewSize = 60;
+	this.viewSize = 400;
 	this.viewCurrent = 0;
 	
 		
@@ -45,6 +45,7 @@ Media.prototype.initialise = function()
 	this.filter = $.querystring().filter ? $.querystring().filter : this.filter;
 	this.filterKey = $.querystring().filterkey;	
 	this.query = $.querystring().query;
+	this.viewStart = $.querystring().start || this.viewStart;
 	
 	$("#menu a").tooltipster({position: "right"});
 	$("#menuFilterView a").tooltipster();
@@ -145,12 +146,12 @@ Media.prototype.initialise = function()
 			} else {
 				this.loadMenu(this.section, this.key);
 			}
-			this.view(this.section, this.key, this.filter, this.filterKey);	
+			this.view(this.section, this.key, this.filter, this.filterKey, this.viewStart);	
 			break;
 			
 		case "search":
 			$("#filter").hide();
-			this.view(this.section, this.key, "search", this.query);		
+			this.view(this.section, this.key, "search", this.query, this.viewStart);		
 			break;			
 	}
 };
@@ -177,6 +178,49 @@ Media.prototype.hideMenu = function()
 	$("#menuBar").css("width", this.menuBarWidth);
 	$("#menuFilter").hide();	
 	this.menuFlag = false;	
+};
+
+Media.prototype.nextPage = function()
+{
+	this.viewStart = this.viewStart+this.viewSize+1;
+	switch($.querystring().action) {
+		case "view":
+			if (this.section == "channels") {
+				$("#filter").hide();
+			} else {
+				this.loadMenu(this.section, this.key);
+			}
+			this.view(this.section, this.key, this.filter, this.filterKey, this.viewStart);	
+			break;
+			
+		case "search":
+			$("#filter").hide();
+			this.view(this.section, this.key, "search", this.query, this.viewStart);		
+			break;			
+	}
+};
+
+Media.prototype.prevPage = function()
+{
+	if (this.viewStart-this.viewSize-1 >= 0) {
+		this.viewStart = this.viewStart-this.viewSize-1;
+	
+		switch($.querystring().action) {
+			case "view":
+				if (this.section == "channels") {
+					$("#filter").hide();
+				} else {
+					this.loadMenu(this.section, this.key);
+				}
+				this.view(this.section, this.key, this.filter, this.filterKey, this.viewStart);	
+				break;
+				
+			case "search":
+				$("#filter").hide();
+				this.view(this.section, this.key, "search", this.query, this.viewStart);		
+				break;			
+		}
+	}
 };
 
 Media.prototype.loadMenu = function(section, key)
@@ -309,6 +353,7 @@ Media.prototype.loadMenu = function(section, key)
 Media.prototype.view = function(section, key, filter, filterKey, start)	
 {
 	this.rowCount = 0;
+	var options = {"start": start,"size":this.viewSize};
 	
 	var self = this;
 	this.showLoader("Loading");
@@ -317,6 +362,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 	// Load section content	
 	self.plex.getSectionMedia(key, filter, filterKey, function(xml) {
 		var $container = $(xml).find("MediaContainer:first");
+		$("#title").stop(true, true);
 		$("#title").show();
 		console.log(filter);
 		switch(filter) {
@@ -324,7 +370,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 				if (key == "channels") {
 					$("#title").text("Channels");
 				} else {
-					$("#title").text($container.attr("title2"));
+					$("#title").text($container.attr("title2") + " | Page " + Math.round(self.viewStart/self.viewSize+1));
 				}
 				break;
 
@@ -499,7 +545,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 			}
 		}
 		self.hideLoader();
-	}, {"start":0,"size":this.viewSize});
+	}, options);
 };	
 
 Media.prototype.showLoader = function(message)

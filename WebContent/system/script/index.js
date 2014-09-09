@@ -464,6 +464,7 @@ Menu.prototype.quickSelectionMenu = function(event)
 {
 	var self = this;
 	var maxItems = 30;
+	var options = {"start": 0,"size": maxItems};
 	
 	self.showLoader("Loading");
 	//console.log(">>" + event.sectionType);
@@ -706,7 +707,7 @@ Menu.prototype.quickSelectionMenu = function(event)
 		});
 		
 		self.hideLoader();
-	});
+	}, options);
 };
 
 Menu.prototype.setCheckOption = function(item, optionName)

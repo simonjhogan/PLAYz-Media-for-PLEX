@@ -19,6 +19,7 @@ function Media()
 	this.PLEX_OPTIONS_PREFIX = "plexOptions-";	
 	this.PLEX_CURRENT_PREFIX = "plexSelected-";
 	this.PLEX_LAST_VIEW_PREFIX = "plexLastView-";
+	this.PLEX_CURRENT_PAGE_PREFIX = "plexStartView-"
 	
 	this.PLEX_VIEW_MODE = "plexViewMode";	
 	this.menuBarWidth = "60px";	
@@ -27,7 +28,7 @@ function Media()
 	
 	this.viewStart = 0;
 	this.viewTotal = 0;
-	this.viewSize = 400;
+	this.viewSize = 80;
 	this.viewCurrent = 0;
 	
 		
@@ -41,11 +42,11 @@ Media.prototype.initialise = function()
 	this.section = $.querystring().section;
 	this.key = $.querystring().key;
 	
-	this.filter = localStorage.getItem(self.PLEX_LAST_VIEW_PREFIX + this.key) ? localStorage.getItem(self.PLEX_LAST_VIEW_PREFIX + this.key) : "all";	
+	this.filter = localStorage.getItem(this.PLEX_LAST_VIEW_PREFIX + this.key) ? localStorage.getItem(this.PLEX_LAST_VIEW_PREFIX + this.key) : "all";	
 	this.filter = $.querystring().filter ? $.querystring().filter : this.filter;
 	this.filterKey = $.querystring().filterkey;	
 	this.query = $.querystring().query;
-	this.viewStart = $.querystring().start || this.viewStart;
+	this.viewStart = $.querystring().start || localStorage.getItem(this.PLEX_CURRENT_PAGE_PREFIX + this.key) || this.viewStart;
 	
 	$("#menu a").tooltipster({position: "right"});
 	$("#menuFilterView a").tooltipster();
@@ -88,12 +89,16 @@ Media.prototype.initialise = function()
 				event.preventDefault();
 				history.back(1);
 				break;
-				
-			case 33: //Page Up
+								
+			case 33:
+			case 417: //Next page
+				self.prevPage();
 				break;
 				
-			case 34: //Page Down
-				break;
+			case 34:
+			case 412: //Previous Page
+				self.nextPage();
+				break;	
 		}	
 	});
 	
@@ -180,31 +185,43 @@ Media.prototype.hideMenu = function()
 	this.menuFlag = false;	
 };
 
+Media.prototype.clearDefaults = function()
+{
+	localStorage.removeItem(self.PLEX_CURRENT_PREFIX + self.key);
+	localStorage.removeItem(this.PLEX_CURRENT_PAGE_PREFIX + this.key);
+};
+
+
 Media.prototype.nextPage = function()
 {
-	this.viewStart = this.viewStart+this.viewSize+1;
-	switch($.querystring().action) {
-		case "view":
-			if (this.section == "channels") {
+	if (this.viewStart+this.viewSize+1 <= this.viewTotal) {
+		localStorage.removeItem(self.PLEX_CURRENT_PREFIX + self.key);
+		this.viewStart = this.viewStart+this.viewSize+1;
+		
+		switch($.querystring().action) {
+			case "view":
+				if (this.section == "channels") {
+					$("#filter").hide();
+				} else {
+					this.loadMenu(this.section, this.key);
+				}
+				this.view(this.section, this.key, this.filter, this.filterKey, this.viewStart);	
+				break;
+				
+			case "search":
 				$("#filter").hide();
-			} else {
-				this.loadMenu(this.section, this.key);
-			}
-			this.view(this.section, this.key, this.filter, this.filterKey, this.viewStart);	
-			break;
-			
-		case "search":
-			$("#filter").hide();
-			this.view(this.section, this.key, "search", this.query, this.viewStart);		
-			break;			
+				this.view(this.section, this.key, "search", this.query, this.viewStart);		
+				break;			
+		}
 	}
 };
 
 Media.prototype.prevPage = function()
 {
 	if (this.viewStart-this.viewSize-1 >= 0) {
+		localStorage.removeItem(self.PLEX_CURRENT_PREFIX + self.key);
 		this.viewStart = this.viewStart-this.viewSize-1;
-	
+			
 		switch($.querystring().action) {
 			case "view":
 				if (this.section == "channels") {
@@ -291,14 +308,14 @@ Media.prototype.loadMenu = function(section, key)
 		
 		$("#thumbsView").click(function() {
 			localStorage.setItem(self.PLEX_VIEW_MODE, "thumbs");
-			self.view(self.section, self.key, self.filter, self.filterKey);	
+			self.view(self.section, self.key, self.filter, self.filterKey, self.viewStart);	
 			self.hideMenu();
 			event.preventDefault();
 		});
 
 		$("#listView").click(function() {
 			localStorage.setItem(self.PLEX_VIEW_MODE, "list");
-			self.view(self.section, self.key, self.filter, self.filterKey);
+			self.view(self.section, self.key, self.filter, self.filterKey, self.viewStart);
 			self.hideMenu();
 			event.preventDefault();
 		});
@@ -364,13 +381,16 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 		var $container = $(xml).find("MediaContainer:first");
 		$("#title").stop(true, true);
 		$("#title").show();
+		self.viewTotal = $(xml).find("MediaContainer:first").attr("totalSize");
+		console.log(self.viewTotal);
+
 		console.log(filter);
 		switch(filter) {
 			case "all":
 				if (key == "channels") {
 					$("#title").text("Channels");
 				} else {
-					$("#title").text($container.attr("title2") + " | Page " + Math.round(self.viewStart/self.viewSize+1));
+					$("#title").text($container.attr("title2") + " | Page " + Math.round(self.viewStart/self.viewSize+1) + " of " + Math.round(self.viewTotal/self.viewSize));
 				}
 				break;
 
@@ -446,6 +466,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 			var item = $(this);
 			var left = 0;
 			localStorage.setItem(self.PLEX_CURRENT_PREFIX + self.key, $(this).data("key"));
+			localStorage.setItem(self.PLEX_CURRENT_PAGE_PREFIX + self.key, self.viewStart);
 			
 			if (localStorage.getItem(self.PLEX_OPTIONS_PREFIX + "hoverBackdrop") == "1") {
 				$("#applicationWallpaper").css("background-image", "url(" + self.plex.getTranscodedPath($(this).data("art"), 1280, 720) + ")");
@@ -538,7 +559,9 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 			$("#mediaView li a[data-key='" + localStorage.getItem(self.PLEX_CURRENT_PREFIX + self.key) + "']:first").focus();
 		} else {
 			if ($("#mediaView li a").length > 0) {
-				$("#mediaView li a:first").focus();
+				if ($("#next:focus").length == 0 && $("#prev:focus").length == 0) {
+					$("#mediaView li a:first").focus();
+				}
 			} else {
 				$("#mediaViewContent ul").html("<p class=\"centered\">Empty view</p");
 				$("#back").focus();	

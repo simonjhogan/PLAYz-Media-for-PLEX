@@ -46,7 +46,7 @@ Media.prototype.initialise = function()
 	this.filter = $.querystring().filter ? $.querystring().filter : this.filter;
 	this.filterKey = $.querystring().filterkey;	
 	this.query = $.querystring().query;
-	this.viewStart = $.querystring().start || localStorage.getItem(this.PLEX_CURRENT_PAGE_PREFIX + this.key) || this.viewStart;
+	this.viewStart = parseInt(localStorage.getItem(this.PLEX_CURRENT_PAGE_PREFIX + this.key)) || this.viewStart;
 	
 	$("#menu a").tooltipster({position: "right"});
 	$("#menuFilterView a").tooltipster();
@@ -198,6 +198,8 @@ Media.prototype.nextPage = function()
 		localStorage.removeItem(self.PLEX_CURRENT_PREFIX + self.key);
 		this.viewStart = this.viewStart+this.viewSize+1;
 		
+		//console.log(this.viewStart + ":" + this.viewSize);
+		
 		switch($.querystring().action) {
 			case "view":
 				if (this.section == "channels") {
@@ -221,7 +223,9 @@ Media.prototype.prevPage = function()
 	if (this.viewStart-this.viewSize-1 >= 0) {
 		localStorage.removeItem(self.PLEX_CURRENT_PREFIX + self.key);
 		this.viewStart = this.viewStart-this.viewSize-1;
-			
+
+		//console.log(this.viewStart + ":" + this.viewSize);
+					
 		switch($.querystring().action) {
 			case "view":
 				if (this.section == "channels") {
@@ -323,7 +327,8 @@ Media.prototype.loadMenu = function(section, key)
 		$("#menuFilterContent a").click(function(event) {
 			self.filter = $(this).data("filter");
 			localStorage.setItem(self.PLEX_LAST_VIEW_PREFIX + $(this).data("key"), $(this).data("filter"));
-			self.view($(this).data("section"), $(this).data("key"), $(this).data("filter"), self.filterKey);
+			self.clearDefaults(); 
+			self.view($(this).data("section"), $(this).data("key"), $(this).data("filter"), self.filterKey, 0);
 			self.hideMenu();
 			event.preventDefault();
 		});
@@ -370,6 +375,7 @@ Media.prototype.loadMenu = function(section, key)
 Media.prototype.view = function(section, key, filter, filterKey, start)	
 {
 	this.rowCount = 0;
+	this.viewStart = start;
 	var options = {"start": start,"size":this.viewSize};
 	
 	var self = this;
@@ -382,28 +388,33 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 		$("#title").stop(true, true);
 		$("#title").show();
 		self.viewTotal = $(xml).find("MediaContainer:first").attr("totalSize");
-		console.log(self.viewTotal);
 
-		console.log(filter);
+		//console.log("Start: " + start);		
+		//console.log("Total: " + self.viewTotal);
+		//console.log("Filter: " + filter);
+		
+		var totalPages = Math.round(self.viewTotal/self.viewSize) || 1;
+		var page = "<br/>Page " + Math.round(start/self.viewSize+1) + " of " + totalPages;
+		
 		switch(filter) {
 			case "all":
 				if (key == "channels") {
-					$("#title").text("Channels");
+					$("#title").html("Channels");
 				} else {
-					$("#title").text($container.attr("title2") + " | Page " + Math.round(self.viewStart/self.viewSize+1) + " of " + Math.round(self.viewTotal/self.viewSize));
+					$("#title").html($container.attr("title2") + page);
 				}
 				break;
 
 			case "search":
 				if (filterKey.indexOf("%") > -1) {
-					$("#title").text("Search Results");
+					$("#title").html("Search Results" + page);
 				} else {
-					$("#title").text("Results for \"" + filterKey + "\"");
+					$("#title").html("Results for \"" + filterKey + "\"" + page);
 				}
 				break;
 				
 			default:
-				$("#title").text($container.attr("title1") + " - " + $container.attr("title2"));
+				$("#title").html($container.attr("title1") + " - " + $container.attr("title2") + page);
 				break;
 		}
 	
@@ -462,6 +473,8 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 		$("#title").fadeOut(8000);
 		self.rowCount = self.getRowCount("#mediaViewContent ul li");	
 
+		console.log(self.rowCount);
+
 		$("#mediaViewContent a").focus(function(event) {
 			var item = $(this);
 			var left = 0;
@@ -513,7 +526,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 		// Handle Arrow Key Navigation
 		$("#mediaViewContent a").keydown(function(event) {
 			var index = $(this).data("key-index");
-			
+			//console.log(Number(index) + " -- " + self.rowCount);
 			var left = (Number(index)%self.rowCount == 0) ? $("#back") : $(this).parents("#mediaView").find("li a[data-key-index='" + (Number(index)-1) + "']");
 			var right = $(this).parents("#mediaView").find("li a[data-key-index='" + (Number(index)+1) + "']");
 			var up = $(this).parents("#mediaView").find("li a[data-key-index='" + (Number(index)-self.rowCount) + "']");

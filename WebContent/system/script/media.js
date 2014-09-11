@@ -87,16 +87,19 @@ Media.prototype.initialise = function()
 			case 461:
 			case 27:
 				event.preventDefault();
+				self.clearDefaults();
 				history.back(1);
 				break;
 								
 			case 33:
-			case 417: //Next page
+			case 403:
+			case 412: //Prev page
 				self.prevPage();
 				break;
 				
 			case 34:
-			case 412: //Previous Page
+			case 406:
+			case 417: //Next Page
 				self.nextPage();
 				break;	
 		}	

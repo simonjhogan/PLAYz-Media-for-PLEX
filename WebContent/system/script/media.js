@@ -331,6 +331,7 @@ Media.prototype.loadMenu = function(section, key)
 			self.filter = $(this).data("filter");
 			localStorage.setItem(self.PLEX_LAST_VIEW_PREFIX + $(this).data("key"), $(this).data("filter"));
 			self.clearDefaults(); 
+			self.filterKey = "";
 			self.view($(this).data("section"), $(this).data("key"), $(this).data("filter"), self.filterKey, 0);
 			self.hideMenu();
 			event.preventDefault();
@@ -384,6 +385,8 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 	var self = this;
 	this.showLoader("Loading");
 	$("#mediaViewContent ul").empty();
+	
+	console.log(key + " " + filter + " " + filterKey);
 	
 	// Load section content	
 	self.plex.getSectionMedia(key, filter, filterKey, function(xml) {
@@ -476,7 +479,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 		$("#title").fadeOut(8000);
 		self.rowCount = self.getRowCount("#mediaViewContent ul li");	
 
-		console.log(self.rowCount);
+		//console.log(self.rowCount);
 
 		$("#mediaViewContent a").focus(function(event) {
 			var item = $(this);

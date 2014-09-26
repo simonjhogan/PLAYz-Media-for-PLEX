@@ -18,6 +18,7 @@ function PLEX() {
 	this.PLEX_SESSION_ID = "plexSessionID";	
 	this.LG_PLEX_SERVER = "plexServerUrl";
 	this.PLEX_OPTIONS_PREFIX = "plexOptions-";	
+	this.PLEX_CACHE = "cache:";
 
 	this.X_Plex_Client_Identifier = localStorage.getItem(this.PLEX_SESSION_ID);
 	this.X_Plex_Product = "Web%20Client";
@@ -99,7 +100,8 @@ PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback, opti
 	var jsonCallback = 'callback' + new Date().getTime();
 	var self = this;
 	var page = "";
-
+	var url = "";
+	
     options = options || {};
     
     var start = options.start || -1;
@@ -115,35 +117,45 @@ PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback, opti
 			case "all": 
 				filter = decodeURIComponent(filterKey);
 				if (filter.indexOf("?") > -1) {
-					$.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time + page, callback);
+					url = this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time + page;
+					//$.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time + page, callback);
 				} else {
-					$.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time + page, callback);
+					url = this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time + page;
+					//$.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time + page, callback);
 				}
 				break;
 
 			case "search": 
-				$.get(this.getServerUrl() + "/search?query=" + filterKey + page , callback);
+				url = this.getServerUrl() + "/search?query=" + filterKey + page;
+				//$.get(this.getServerUrl() + "/search?query=" + filterKey + page , callback);
 				break;
 								
 			default:
-				$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time + page, callback);		
+				url = this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time + page;
+				//$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time + page, callback);
 				break;
 		}
 	} else {
 		if (key == "channels") {
 			self.getChannels(key, callback);
+			return;
 		} else {
-			$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time + page, callback);	
+			url = this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time + page;
+			//$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time + page, callback);	
 		}
 	}
+	$.get(url, callback);
 };
 
 PLEX.prototype.getRecentlyAdded = function(key, callback) {
-	$.get(this.getServerUrl() + "/library/sections/" + key + "/recentlyAdded?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
+	//$.get(this.getServerUrl() + "/library/sections/" + key + "/recentlyAdded?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
+	$.get(this.getServerUrl() + "/library/sections/" + key + "/recentlyAdded?X-Plex-Container-Start=0&X-Plex-Container-Size=25", callback);
+
 };
 
 PLEX.prototype.getOnDeck = function(key, callback) {
-	$.get(this.getServerUrl() + "/library/onDeck?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
+	//$.get(this.getServerUrl() + "/library/onDeck?X-Plex-Container-Start=0&X-Plex-Container-Size=25&X-Plex-Access-Time=" + this.time, callback);
+	$.get(this.getServerUrl() + "/library/onDeck?X-Plex-Container-Start=0&X-Plex-Container-Size=25", callback);	
 };
 
 PLEX.prototype.getChannels = function(key, callback) {

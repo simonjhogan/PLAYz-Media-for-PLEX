@@ -772,6 +772,11 @@ Menu.prototype.optionsDialog = function(event)
 		$("#options a#optionLargeText i").removeClass("unchecked");
 		$("#options a#optionLargeText i").addClass("check");	
 	}
+
+	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmall") == "1") {
+		$("#options a#optionSeekSmall i").removeClass("unchecked");
+		$("#options a#optionSeekSmall i").addClass("check");	
+	}
 	
 	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "debug") == "1") {
 		$("#options a#optionDebugDetails i").removeClass("unchecked");
@@ -832,6 +837,11 @@ Menu.prototype.optionsDialog = function(event)
 		} else {
 			$("body").removeClass("xlarge");
 		}
+	});
+
+	$("#options a#optionSeekSmall").click(function(event) {
+		event.preventDefault();
+		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "seekSmall");		
 	});
 	
 	$("#options a#optionDebugDetails").click(function(event) {

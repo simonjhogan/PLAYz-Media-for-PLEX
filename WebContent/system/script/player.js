@@ -26,6 +26,8 @@ function Player() {
 	this.scanStepRation = 30;	
 	this.resume = false;
 	
+	
+	this.smallSeek = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmall") == "1" ? true : false;
 	this.debug = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "debug") == "1" ? true : false;
 };
 
@@ -753,7 +755,12 @@ Player.prototype.rewind = function()
 {
 	var pos = Number(this.media.playPosition);
 	var total = Number(this.media.playTime);
-	this.scanStep = Math.round(total/this.scanStepRation);
+	
+	if (this.smallSeek) {
+		this.scanStep = 60000;
+	} else {
+		this.scanStep = Math.round(total/this.scanStepRation);
+	}
 	
 	pos = (pos - this.scanStep) > 0 ? pos - this.scanStep : 0;
 	this.media.seek(pos);
@@ -767,8 +774,13 @@ Player.prototype.forward = function()
 {
 	var pos = Number(this.media.playPosition);
 	var total = Number(this.media.playTime);
-	this.scanStep = Math.round(total/this.scanStepRation);
 	
+	if (this.smallSeek) {
+		this.scanStep = 60000;
+	} else {
+		this.scanStep = Math.round(total/this.scanStepRation);
+	}
+
 	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1000;
 	this.media.seek(pos);
 	

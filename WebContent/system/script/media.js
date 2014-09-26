@@ -386,7 +386,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 	this.showLoader("Loading");
 	$("#mediaViewContent ul").empty();
 	
-	console.log(key + " " + filter + " " + filterKey);
+	//console.log(key + " " + filter + " " + filterKey);
 	
 	// Load section content	
 	self.plex.getSectionMedia(key, filter, filterKey, function(xml) {
@@ -398,9 +398,10 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 		//console.log("Start: " + start);		
 		//console.log("Total: " + self.viewTotal);
 		//console.log("Filter: " + filter);
+		//console.log(self.viewTotal + " - " + self.viewSize + " - " + (self.viewTotal/self.viewSize));
 		
-		var totalPages = Math.round(self.viewTotal/self.viewSize) || 1;
-		var page = "<br/>Page " + Math.round(start/self.viewSize+1) + " of " + totalPages;
+		var totalPages = Math.ceil(self.viewTotal/self.viewSize);
+		var page = "<br/>Page " + (Math.round(start/self.viewSize+1)) + " of " + totalPages;
 		
 		switch(filter) {
 			case "all":

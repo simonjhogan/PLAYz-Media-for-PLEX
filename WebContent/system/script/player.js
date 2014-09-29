@@ -28,6 +28,12 @@ function Player() {
 	
 	
 	this.smallSeek = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmall") == "1" ? true : false;
+	
+	// Custom seek increments
+	// Defaults to 60 seconds if seekSmall is enabled and seekSmallCustom is not set
+	this.smallSeekTime = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmallCustom");
+	this.smallSeekTime = this.smallSeekTime && !isNaN(this.smallSeekTime) ? this.smallSeekTime * 1000 : 60000; // defaults to 60 seconds
+	
 	this.debug = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "debug") == "1" ? true : false;
 };
 
@@ -196,17 +202,32 @@ Player.prototype.initialise = function()
 		}
 		
 		if (event.which == 40) { //Down
-			self.hideControls();
+			if (self.downFromProgress) {
+				// if focus just moved down from the progress bar to media controls, don't hide the control bar
+				self.downFromProgress = false;
+			}
+			else {
+				self.hideControls();
+			}
 			return;
 		}
 		
 		self.showControls();
 	});	
 	
-	$("a").keydown(function() {
+	$("a").keydown(function(event) {
 		var current = $(this).data("keyIndex");
 		var right = Number(current) + 1;
 		var left = Number(current) - 1;
+		
+		// Up Arrow		
+		if (event.which == 38 && $("#controls").is(":visible")) {
+			// Focus on progress bar
+			$("#progressbar-container").data("keyIndex", current);
+			$("#progressbar-container").focus();
+			$("a[data-key-index='" + current + "']").blur();
+			event.preventDefault();
+		}
 		
 		// Left Arrow
 		if (event.which == 37) {
@@ -229,12 +250,83 @@ Player.prototype.initialise = function()
 		}
 	});
 	
+	this.seekTimer;
+	this.seekKeydown = false;
+	this.seekNewTime = 0;
+	this.downFromProgress = false;
+	$("#progressbar-container").keydown(function(event) {
+		// Down Arrow
+		if (event.which == 40) {
+			event.preventDefault();
+			self.downFromProgress = true;
+			$("a[data-key-index='" + ($(this).data("keyIndex") || 8) + "']").focus();
+		}
+		
+		// Left/Right Arrow
+		// Holding down the left/right arrow will start seeking the progress bar
+		if (!self.seekKeydown && (event.which == 37 || event.which == 39)) {
+			event.preventDefault();
+			self.pause();
+			
+			var t = 0,
+				amt = 0;
+			self.seekKeydown = true;
+			self.seekNewTime = self.media.playPosition;
+			clearInterval(self.seekTimer);
+			self.seekTimer = setInterval(function() {
+				function easeInCubic(t, b, c, d) {
+					t /= d;
+					return c*t*t + b;
+				}
+				
+				// The longer you hold down the left/right buttons, the faster it will seek
+				amt = easeInCubic(t++, 10000, 250, 7);
+				self.seekNewTime += (amt * (event.which == 37 ? -1 : 1));
+				
+				if (self.seekNewTime > self.media.playTime) {
+					self.seekNewTime = self.media.playTime;
+					clearInterval(self.seekTimer);
+				} else if (self.seekNewTime < 0) {
+					self.seekNewTime = 0;
+					clearInterval(self.seekTimer);
+				}
+				
+				// Change the progress bar position and time to reflect new time
+				var pos = (self.seekNewTime/self.media.playTime)*100; 
+				self.progessbar.progress(pos);
+				if (self.seekNewTime) {
+					$("#progressTime").text(self.plex.getTimeFromMS(self.seekNewTime) + "/" + self.plex.getTimeFromMS(self.media.playTime));
+				}
+				
+			}, 50);
+		}
+	});
+	
+	$("#progressbar-container").keyup(function() {
+		// Resume playing if button released
+		if (self.seekKeydown) {
+			event.preventDefault();
+			clearInterval(self.seekTimer);
+			self.seekKeydown = false;
+			var ms = Math.round(self.seekNewTime);
+			self.seek(ms);
+			self.speed = 1;
+			self.play(self.speed);
+			self.timerControls();
+		}
+	});
+	
 	$("#controls a, .options a").hover(function(event) {
 		$(this).focus();
 	});
 
 	$("#controls a, .options a").focus(function(event) {
-		$("#controls a, .options a").removeClass("selected");
+		$("#controls a, .options a, #progressbar-container").removeClass("selected");
+		$(this).addClass("selected");
+	});
+	
+	$("#progressbar-container").focus(function(event) {
+		$("#controls a, .options a, #progressbar-container").removeClass("selected");
 		$(this).addClass("selected");
 	});
 
@@ -751,16 +843,19 @@ Player.prototype.play = function(speed)
 	}, 1000);
 };
 
+Player.prototype.getSeekIncrement = function(totalTime) {
+	if (this.smallSeek) {
+		return this.smallSeekTime;
+	} else {
+		return Math.round(totalTime/this.scanStepRation);
+	}
+};
+
 Player.prototype.rewind = function()
 {
 	var pos = Number(this.media.playPosition);
 	var total = Number(this.media.playTime);
-	
-	if (this.smallSeek) {
-		this.scanStep = 60000;
-	} else {
-		this.scanStep = Math.round(total/this.scanStepRation);
-	}
+	this.scanStep = this.getSeekIncrement(total);
 	
 	pos = (pos - this.scanStep) > 0 ? pos - this.scanStep : 0;
 	this.media.seek(pos);
@@ -774,12 +869,7 @@ Player.prototype.forward = function()
 {
 	var pos = Number(this.media.playPosition);
 	var total = Number(this.media.playTime);
-	
-	if (this.smallSeek) {
-		this.scanStep = 60000;
-	} else {
-		this.scanStep = Math.round(total/this.scanStepRation);
-	}
+	this.scanStep = this.getSeekIncrement(total);
 
 	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1000;
 	this.media.seek(pos);

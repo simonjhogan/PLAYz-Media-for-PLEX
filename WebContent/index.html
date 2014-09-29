@@ -137,7 +137,11 @@ $(document).ready(function() {
 					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionDisableNextEpisodePlay" data-key-down="#optionDisableWatchedIcons" id="optionBackdropHover" href=""><i class="glyphicon unchecked"></i> <span data-language="dialogOptionsBackgroundArt">Show background art on thumbnail focus</span></a></div>
 					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionBackdropHover" data-key-down="#optionLargeText" id="optionDisableWatchedIcons" href=""><i class="glyphicon unchecked"></i> <span data-language="dialogOptionsUnwatchedIcons">Disable unwatched icons on thumbnails</span></a></div>
 					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionDisableWatchedIcons" data-key-down="#optionSeekSmall" id="optionLargeText" href=""><i class="glyphicon unchecked"></i> <span data-language="dialogOptionsLargeFont">User Extra Large fonts for all text</span></a></div>
-					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionLargeText" data-key-down="#optionDebugDetails" id="optionSeekSmall" href=""><i class="glyphicon unchecked"></i> <span data-language="dialogOptionsSeekSmall">Seek in 60 second increments</span></a></div>
+					<div class="details">
+						<a data-key-left="#navigator #settings a.selected" data-key-up="#optionLargeText" data-key-right="#optionSeekSmallCustom" data-key-down="#optionDebugDetails" id="optionSeekSmall" href=""><i class="glyphicon unchecked"></i> <span data-language="dialogOptionsSeekSmall">Custom seek increment (defaults to 60 seconds)</span></a>
+						<input data-key-up="#optionLargeText" data-key-down="#optionDebugDetails" data-key-right="#seekSmallClear" data-key-left="#optionSeekSmall" name="optionSeekSmallCustom" id="optionSeekSmallCustom" type="text" value="" placeholder="e.g. 60" autocomplete="off"/>
+						<button data-key-up="#optionLargeText" data-key-down="#optionDebugDetails" data-key-left="#optionSeekSmallCustom" class="keypad" id="seekSmallClear">Clear</button>
+					</div>
 					<div class="details"><a data-key-left="#navigator #settings a.selected" data-key-up="#optionSeekSmall" id="optionDebugDetails" href=""><i class="glyphicon unchecked"></i> <span data-language="dialogOptionsDebug">Provide debug and system resource information</span></a></div>
 				</div>			
 			</div>

@@ -779,6 +779,14 @@ li.track a:focus, li.list a:focus  {
 	text-align: left;
 	padding: 10px;
 }
+
+#options input#optionSeekSmallCustom {
+	width:100px;
+}
+
+#options .details > *:not(:first-child) {
+	margin-left: 10px;
+}
 	
 #about .content {
 	text-align: center;

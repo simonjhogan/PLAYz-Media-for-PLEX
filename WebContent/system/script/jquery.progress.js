@@ -12,8 +12,7 @@
         width: '400px',
         height: '10px',
         color: '#ff9900',
-        padding: '0px',
-        border: '1px solid #666'},options);
+        padding: '0px'},options);
   
 		$(this).css({
 			'width':settings.width,

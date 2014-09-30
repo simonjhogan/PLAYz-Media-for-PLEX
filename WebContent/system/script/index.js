@@ -775,7 +775,11 @@ Menu.prototype.optionsDialog = function(event)
 
 	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmall") == "1") {
 		$("#options a#optionSeekSmall i").removeClass("unchecked");
-		$("#options a#optionSeekSmall i").addClass("check");	
+		$("#options a#optionSeekSmall i").addClass("check");
+	}
+	var seekSmallCustom = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmallCustom");
+	if (seekSmallCustom != "" && !isNaN(seekSmallCustom)) {
+		$("#options input#optionSeekSmallCustom").val(Math.round(seekSmallCustom) || "");
 	}
 	
 	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "debug") == "1") {
@@ -844,12 +848,23 @@ Menu.prototype.optionsDialog = function(event)
 		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "seekSmall");		
 	});
 	
+	$("#options input#optionSeekSmallCustom").blur(function(event) {
+		// Save option when the field loses focus
+		event.preventDefault();
+		localStorage.setItem(self.PLEX_OPTIONS_PREFIX + "seekSmallCustom", $(this).val());
+		
+		// If input is changed, enable the seekSmall checkbox if it's not already
+		if (localStorage.getItem(self.PLEX_OPTIONS_PREFIX + "seekSmall") != "1" && $(this).val()) {
+			$("#options a#optionSeekSmall").click();
+		}
+	});
+	
 	$("#options a#optionDebugDetails").click(function(event) {
 		event.preventDefault();
 		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "debug");		
 	});
 	
-	$("#options a").keydown(function(event) {
+	$("#options a, #options input, #options button").keydown(function(event) {
 		
 		// Up Arrow		
 		if (event.which == 38) {
@@ -890,6 +905,13 @@ Menu.prototype.optionsDialog = function(event)
 			event.stopPropagation();				
 		}		
 	});	
+	
+	// Clear seekSmallCustom input field value
+	$("#seekSmallClear").click(function(event) {
+		$("#options input#optionSeekSmallCustom").val("");
+		$("#options input#optionSeekSmallCustom").focus();
+	});
+	
 	
 };
 

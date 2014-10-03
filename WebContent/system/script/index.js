@@ -848,6 +848,32 @@ Menu.prototype.optionsDialog = function(event)
 		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "seekSmall");		
 	});
 	
+	$("#options input#optionSeekSmallCustom").keydown(function(event) {
+		var val = $(this).val() || 0;
+		
+		// increase/decrease custom seek time
+		
+		// Up Arrow		
+		if (event.which == 38) {
+			if (val >= 600) // max 10 minutes
+				val = 600
+			else
+				val++;
+			$(this).val(val);
+			event.preventDefault();
+		}
+		
+		// Down Arrow
+		if (event.which == 40) {
+			if (val <= 1) // min 1 second
+				val = 1
+			else
+				val--;
+			$(this).val(val);
+			event.preventDefault();	
+		}
+	});
+	
 	$("#options input#optionSeekSmallCustom").blur(function(event) {
 		// Save option when the field loses focus
 		event.preventDefault();

@@ -292,11 +292,7 @@ Player.prototype.initialise = function()
 				}
 				
 				// Change the progress bar position and time to reflect new time
-				var pos = (self.seekNewTime/self.media.playTime)*100; 
-				self.progessbar.progress(pos);
-				if (self.seekNewTime) {
-					$("#progressTime").text(self.plex.getTimeFromMS(self.seekNewTime) + "/" + self.plex.getTimeFromMS(self.media.playTime));
-				}
+				self.setProgressByMS(self.seekNewTime);
 				
 			}, 50);
 		}
@@ -805,6 +801,17 @@ Player.prototype.infoBox = function()
 	}
 };
 
+Player.prototype.setProgressByMS = function(timeMs) 
+{
+	if ($("#controls").is(":visible")) {
+		var pos = (timeMs/this.media.playTime)*100;
+		this.progessbar.progress(pos);
+		if (timeMs) {
+			$("#progressTime").text(this.plex.getTimeFromMS(timeMs) + "/" + this.plex.getTimeFromMS(this.media.playTime));
+		}
+	}
+};
+
 Player.prototype.play = function(speed)
 {
 	var self = this;
@@ -818,13 +825,7 @@ Player.prototype.play = function(speed)
 	
 	clearInterval(this.timer);
 	this.timer = setInterval(function() {
-		if ($("#controls").is(":visible")) {
-			var pos = (self.media.playPosition/self.media.playTime)*100; 
-			self.progessbar.progress(pos);
-			if (self.media.playPosition) {
-				$("#progressTime").text(self.plex.getTimeFromMS(self.media.playPosition) + "/" + self.plex.getTimeFromMS(self.media.playTime));
-			}
-		}
+		self.setProgressByMS(self.media.playPosition);
 		
 		if (self.debug) {
 			if (window.NetCastGetUsedMemorySize) {
@@ -882,6 +883,7 @@ Player.prototype.forward = function()
 Player.prototype.pause = function()
 {
 	//$("#play").focus();
+	this.setProgressByMS(this.media.playPosition);
 	clearInterval(this.timer);
 	this.media.play(0);
 };

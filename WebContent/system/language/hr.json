@@ -41,6 +41,7 @@
         "dialogOptionsBackgroundArt":"Prikaži pozadinu prelaskom na poster",
         "dialogOptionsUnwatchedIcons":"Isključi oznaku neodgledano na posterima",
         "dialogOptionsLargeFont":"Koristi ekstra veliki font za sav tekst",
+        "dialogOptionsSeekSmall":"Podesi interval premotavanja na 60 sekundi",
         "dialogOptionsDebug":"Dostavi informacije o sistemskim resursima i debug",
         "dialogLanguage":"Jezik",
         "dialogLanguagePrompt":"Molim odaberite jezik aplikacije",       

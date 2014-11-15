@@ -41,6 +41,7 @@
         "dialogOptionsBackgroundArt":"Прикажи позадину преласком на постер",
         "dialogOptionsUnwatchedIcons":"Искључи ознаку „Неодгледано“ на постерима",
         "dialogOptionsLargeFont":"Користи веома велика слова за све текстове",
+        "dialogOptionsSeekSmall":"Подеси интервал премотавања на 60 секунди",,
         "dialogOptionsDebug":"Достави информације о системским ресурсима и отклањању грешака",
         "dialogLanguage":"Језик",
         "dialogLanguagePrompt":"Молимо вас да изаберете језик апликације",       

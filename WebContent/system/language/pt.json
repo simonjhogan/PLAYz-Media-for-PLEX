@@ -42,6 +42,7 @@
         "dialogOptionsUnwatchedIcons":"Desativar ícones de não assistido nas miniaturas",
         "dialogOptionsLargeFont":"Usar fonte extra grande para todos os textos",
         "dialogOptionsDebug":"Fornecer informação de depuração e recursos do sistema",
+		"dialogOptionsSmallPicutres":"Exibir imagens pequenas",
         "dialogLanguage":"Idioma",
         "dialogLanguagePrompt":"Selecione idioma do aplicativo abaixo",       
         "menuBack":"Voltar",

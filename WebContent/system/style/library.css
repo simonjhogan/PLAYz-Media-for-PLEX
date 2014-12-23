@@ -1362,3 +1362,44 @@ li.track .playing {
 	text-align: center;
 	margin-top: 280px;
 }
+
+/** custom by DarkSupremo**/
+.unwatched-count-badge {
+	-webkit-box-shadow: 0 0 10px rgba(0,0,0,.5);
+	box-shadow: 0 0 10px rgba(0,0,0,.5);
+}
+
+.badge {
+	display: inline-block;
+	min-width: 10px;
+	padding: 3px 7px;
+	font-size: 12px;
+	font-weight: 400;
+	color: #fff;
+	line-height: 1;
+	vertical-align: baseline;
+	white-space: nowrap;
+	text-align: center;
+	background-color: #cc7b19;
+	border-radius: 9px;
+}
+
+.badge-lg {
+	padding: 4px 8px;
+	font-size: 14px;
+	border-radius: 10px;
+}
+
+li.media.bigger a {
+	height: 270px;
+	width: 180px;
+}
+
+li.media a div.thumb.bigger {
+	height: 270px;
+	width: 180px;
+}
+
+li.media div.subtitle { 
+	width: 95.4%;				
+}

@@ -787,6 +787,11 @@ Menu.prototype.optionsDialog = function(event)
 		$("#options a#optionDebugDetails i").addClass("check");	
 	}
 	
+	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "smallPicutres") == "1") {
+		$("#options a#optionSmallPictures i").removeClass("unchecked");
+		$("#options a#optionSmallPictures i").addClass("check");	
+	}
+	
 	$("#options").show();
 	$("#options a").off();
 	$("#options a").hover(function() {
@@ -888,6 +893,11 @@ Menu.prototype.optionsDialog = function(event)
 	$("#options a#optionDebugDetails").click(function(event) {
 		event.preventDefault();
 		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "debug");		
+	});
+	
+	$("#options a#optionSmallPictures").click(function(event) {
+		event.preventDefault();
+		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "smallPicutres");		
 	});
 	
 	$("#options a, #options input, #options button").keydown(function(event) {

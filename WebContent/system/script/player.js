@@ -391,7 +391,7 @@ Player.prototype.openMedia = function(key)
 				self.speed = 1;
 				self.play(self.speed);
 				self.disableSubtitles();
-				//self.setDefaultStreams(); 
+				self.setDefaultStreams(); // was disabled?
 			}
 		} else {
 			$("#play").focus();
@@ -466,9 +466,10 @@ Player.prototype.resumeDialog = function(ms)
 
 Player.prototype.setDefaultStreams = function()
 {
-	/* var defaultSubtitles = $(this.cache).find("Media:first Part:first Stream[streamType='3'][selected='1']");	
+	var defaultSubtitles = $(this.cache).find("Media:first Part:first Stream[streamType='3'][selected='1']");	
 	if (defaultSubtitles.length > 0) {
 		this.enableSubtitles($(defaultSubtitles).attr("key"));
+	}
 	
 	
 	var defaultLanguage = $(this.cache).find("Media:first Part:first Stream[streamType='2'][selected='1']");	
@@ -476,7 +477,7 @@ Player.prototype.setDefaultStreams = function()
 		if ($(defaultLanguage).attr("languageCode")) {
 			this.setAudoLanguage($(defaultLanguage).attr("languageCode"), $(defaultLanguage).attr("language"));
 		}
-	}*/
+	}
 };
 
 Player.prototype.subtitleDialog = function()
@@ -821,7 +822,8 @@ Player.prototype.play = function(speed)
 	
 	
 	this.media.play(speed);
-	this.timerControls();	
+	//this.timerControls();	
+	self.hideControls();
 	
 	clearInterval(this.timer);
 	this.timer = setInterval(function() {

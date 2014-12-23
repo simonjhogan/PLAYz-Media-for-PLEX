@@ -42,6 +42,7 @@
         "dialogOptionsUnwatchedIcons":"Disable unwatched icons on thumbnails",
         "dialogOptionsLargeFont":"User Extra Large fonts for all text",
         "dialogOptionsDebug":"Provide debug and system resource information",
+		"dialogOptionsSmallPicutres":"Display small pictures",
         "dialogLanguage":"Language",
         "dialogLanguagePrompt":"Please select application language below",       
         "menuBack":"Back",

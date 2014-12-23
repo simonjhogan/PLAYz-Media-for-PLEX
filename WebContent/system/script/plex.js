@@ -230,14 +230,26 @@ PLEX.prototype.getTranscodedMediaFlagPath = function(flag, value, width, height)
 // HTML output functions
 PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key, metadata) {
 	var html = "";
+	var biggerClass = "";	
+	var width = 128;
+	var height = 190;
+	
 	if (sectionType && sectionType.indexOf("home") > -1) {
 		mediaType = "home";
 	}
 	
+	var bigger = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "smallPicutres") != "1";
+		
+	if (bigger && sectionType.indexOf('recent') == '-1') {
+		width = 180;
+		height = 270;
+		biggerClass = "bigger ";
+	}
+	
 	switch(mediaType) {	
 		case "movie":
-			html = "<li class=\"media " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" data-media=\"" + metadata.media + "\" href>";
-			html += "<div class=\"thumb\" data-original=\"" + this.getTranscodedPath(metadata.thumb, 128, 190) + "\"></div>";	
+			html = "<li class=\"media " + biggerClass + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" data-media=\"" + metadata.media + "\" href>";
+			html += "<div class=\"thumb " + biggerClass + "\" data-original=\"" + this.getTranscodedPath(metadata.thumb, width, height) + "\"></div>";	
 			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "titleOverlay") != "1"){html += "<div class=\"subtitle alt\">" + title + "</div>";};
 			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "watchedIcons") != "1") {
 				html += "<div class=\"watchedStatus\">" + this.getWatchedIconHtml(metadata.lastViewedAt, metadata.viewOffset, metadata.viewCount, metadata.duration) + "</div>";
@@ -279,11 +291,11 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 			break;
 
 		case "show":			
-			html = "<li class=\"media " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" href>";
-			html += "<div class=\"thumb\" data-original=\"" + this.getTranscodedPath(metadata.thumb, 128, 190) + "\"></div>";
+			html = "<li class=\"media " + biggerClass + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" href>";
+			html += "<div class=\"thumb " + biggerClass + "\" data-original=\"" + this.getTranscodedPath(metadata.thumb, width, height) + "\"></div>";
 			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "titleOverlay") == "0") {html += "<div class=\"subtitle alt\">" + title + "</div>";};	
 			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "watchedIcons") != "1") {
-				html += "<div class=\"watchedStatus watchedCount\">" + (Number(metadata.leafCount) - Number(metadata.viewedLeafCount)) + "</div>";	
+				html += "<div class=\"watchedStatus unwatched-count-badge badge badge-lg\">" + (Number(metadata.leafCount) - Number(metadata.viewedLeafCount)) + "</div>";	
 			}			
 			html += "</a></li>";	
 			break;

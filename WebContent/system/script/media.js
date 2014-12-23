@@ -503,7 +503,7 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 						} else {
 							clearInterval(self.titleScroll);	
 						}
-					}, 100);
+					}, 50);
 				},1000);
 			}
 		});

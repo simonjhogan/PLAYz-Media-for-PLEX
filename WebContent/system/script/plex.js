@@ -293,7 +293,7 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 		case "show":			
 			html = "<li class=\"media " + biggerClass + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" href>";
 			html += "<div class=\"thumb " + biggerClass + "\" data-original=\"" + this.getTranscodedPath(metadata.thumb, width, height) + "\"></div>";
-			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "titleOverlay") == "0") {html += "<div class=\"subtitle alt\">" + title + "</div>";};	
+			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "titleOverlay") != "1") {html += "<div class=\"subtitle alt\">" + title + "</div>";};	
 			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "watchedIcons") != "1") {
 				html += "<div class=\"watchedStatus unwatched-count-badge badge badge-lg\">" + (Number(metadata.leafCount) - Number(metadata.viewedLeafCount)) + "</div>";	
 			}			

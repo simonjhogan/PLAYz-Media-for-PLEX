@@ -42,6 +42,7 @@
         "dialogOptionsUnwatchedIcons":"Simgelerde izlenmemiş ikonlarının gösterilmesini engelle",
         "dialogOptionsLargeFont":"Tüm yazılar için Çok Büyük yazıtipi kullan",
         "dialogOptionsDebug":"Hata giderme ve sistem kaynak kullanım bilgisini göster",
+        "dialogOptionsSmallPicutres":"Küçük resimler göster",
         "dialogLanguage":"Dil",
         "dialogLanguagePrompt":"Lütfen uygulama dilini aşağıdan seçiniz",      
         "menuBack":"Geri",

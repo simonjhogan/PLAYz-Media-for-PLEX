@@ -32,7 +32,7 @@ function Player() {
 	// Custom seek increments
 	// Defaults to 60 seconds if seekSmall is enabled and seekSmallCustom is not set
 	this.smallSeekTime = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmallCustom");
-	this.smallSeekTime = this.smallSeekTime && !isNaN(this.smallSeekTime) ? this.smallSeekTime * 1000 : 60000; // defaults to 60 seconds
+	this.smallSeekTime = this.smallSeekTime && !isNaN(this.smallSeekTime) ? parseInt(this.smallSeekTime) : 60; // defaults to 60 seconds
 	
 	this.debug = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "debug") == "1" ? true : false;
 };
@@ -81,7 +81,7 @@ Player.prototype.initialise = function()
 		
 	}
 
-	
+	/* @fixme
 	this.media.onPlayStateChange = function(event) {
 		var state = document.getElementById("player").playState;
 
@@ -92,7 +92,7 @@ Player.prototype.initialise = function()
 				$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
 				$("#message").show();
 				$("#message").fadeOut(3000);
-				self.plex.reportProgress(self.mediaKey, "stopped", self.media.playPosition);			
+				self.plex.reportProgress(self.mediaKey, "stopped", self.media.currentTime*1000);			
 				break;
 				
 			case 1: //Playing
@@ -114,7 +114,7 @@ Player.prototype.initialise = function()
 				
 				$("#message").html("<i class=\"glyphicon xlarge pause\"></i>");
 				$("#message").show();
-				this.plex.reportProgress(self.mediaKey, "paused", self.media.playPosition);			
+				this.plex.reportProgress(self.mediaKey, "paused", self.media.currentTime*1000);			
 				break;
 				
 			case 3: //Connecting
@@ -178,6 +178,7 @@ Player.prototype.initialise = function()
 				
 		}	
 	};
+	*/
 	
 	this.media.onError = function() {
 		var error = document.getElementById("player").error;
@@ -271,7 +272,7 @@ Player.prototype.initialise = function()
 			var t = 0,
 				amt = 0;
 			self.seekKeydown = true;
-			self.seekNewTime = self.media.playPosition;
+			self.seekNewTime = self.media.currentTime;
 			clearInterval(self.seekTimer);
 			self.seekTimer = setInterval(function() {
 				function easeInCubic(t, b, c, d) {
@@ -283,8 +284,8 @@ Player.prototype.initialise = function()
 				amt = easeInCubic(t++, 10000, 250, 7);
 				self.seekNewTime += (amt * (event.which == 37 ? -1 : 1));
 				
-				if (self.seekNewTime > self.media.playTime) {
-					self.seekNewTime = self.media.playTime;
+				if (self.seekNewTime > self.media.duration) {
+					self.seekNewTime = self.media.duration;
 					clearInterval(self.seekTimer);
 				} else if (self.seekNewTime < 0) {
 					self.seekNewTime = 0;
@@ -292,7 +293,7 @@ Player.prototype.initialise = function()
 				}
 				
 				// Change the progress bar position and time to reflect new time
-				self.setProgressByMS(self.seekNewTime);
+				self.setProgress(self.seekNewTime);
 				
 			}, 50);
 		}
@@ -304,8 +305,8 @@ Player.prototype.initialise = function()
 			event.preventDefault();
 			clearInterval(self.seekTimer);
 			self.seekKeydown = false;
-			var ms = Math.round(self.seekNewTime);
-			self.seek(ms);
+			var s = Math.round(self.seekNewTime);
+			self.seek(s);
 			self.speed = 1;
 			self.play(self.speed);
 			self.timerControls();
@@ -365,7 +366,7 @@ Player.prototype.openMedia = function(key)
 			}			
 			
 			//Integrated player
-			self.media.data = self.plex.getServerUrl() + self.mediaUrl;
+			self.media.src = self.plex.getServerUrl() + self.mediaUrl;
 			if ($(xml).find("Stream[streamType='2']").length <= 1) {
 				$("#language").hide();		
 			} else {
@@ -379,7 +380,7 @@ Player.prototype.openMedia = function(key)
 			}
 		} else {
 			//Transcode HLS - Chrome/Web profile
-			self.media.data = self.plex.getHlsTranscodeUrl(self.key);			
+			self.media.src = self.plex.getHlsTranscodeUrl(self.key);			
 		}
 		self.hideLoader();
 		
@@ -417,7 +418,7 @@ Player.prototype.resumeDialog = function(ms)
 		event.preventDefault();
 		
 		if (self.directPlay) {
-			self.seek(ms);
+			self.seek(ms/1000);
 		} else {
 			self.showLoader("Seeking");
 			self.resume = true;
@@ -761,8 +762,8 @@ Player.prototype.initControls = function()
 	});
 	
 	$(document).on("progressClick", function(event) {
-		var ms = Math.round(event.percent/100 * self.media.playTime);
-		self.seek(ms);
+		var s = Math.round(event.percent/100 * self.media.duration);
+		self.seek(s);
 		$("a.selected").focus();
 		self.timerControls();
 	});	
@@ -802,13 +803,13 @@ Player.prototype.infoBox = function()
 	}
 };
 
-Player.prototype.setProgressByMS = function(timeMs) 
+Player.prototype.setProgress = function(time) 
 {
 	if ($("#controls").is(":visible")) {
-		var pos = (timeMs/this.media.playTime)*100;
+		var pos = (time/this.media.duration)*100;
 		this.progessbar.progress(pos);
-		if (timeMs) {
-			$("#progressTime").text(this.plex.getTimeFromMS(timeMs) + "/" + this.plex.getTimeFromMS(this.media.playTime));
+		if (time) {
+			$("#progressTime").text(this.plex.getTimeFromMS(time*1000) + "/" + this.plex.getTimeFromMS(this.media.duration*1000));
 		}
 	}
 };
@@ -820,14 +821,14 @@ Player.prototype.play = function(speed)
 	
 	//$("#pause").focus();	
 	
-	
-	this.media.play(speed);
+	this.media.playbackRate = speed;
+	this.media.play();
 	//this.timerControls();	
 	self.hideControls();
 	
 	clearInterval(this.timer);
 	this.timer = setInterval(function() {
-		self.setProgressByMS(self.media.playPosition);
+		self.setProgress(self.media.currentTime);
 		
 		if (self.debug) {
 			if (window.NetCastGetUsedMemorySize) {
@@ -838,8 +839,8 @@ Player.prototype.play = function(speed)
 		self.progressCount++;
 		
 		if (self.progressCount >= 30) {
-			self.setWatchedStatus(self.mediaKey, self.media.playTime, self.media.playPosition);
-			self.plex.reportProgress(self.mediaKey, "playing", self.media.playPosition);
+			self.setWatchedStatus(self.mediaKey, self.media.duration, self.media.currentTime);
+			self.plex.reportProgress(self.mediaKey, "playing", self.media.currentTime*1000);
 			self.progressCount = 0;
 		}
 		
@@ -856,12 +857,12 @@ Player.prototype.getSeekIncrement = function(totalTime) {
 
 Player.prototype.rewind = function()
 {
-	var pos = Number(this.media.playPosition);
-	var total = Number(this.media.playTime);
+	var pos = Number(this.media.currentTime);
+	var total = Number(this.media.duration);
 	this.scanStep = this.getSeekIncrement(total);
 	
 	pos = (pos - this.scanStep) > 0 ? pos - this.scanStep : 0;
-	this.media.seek(pos);
+	this.media.currentTime = pos;
 	
 	$("#message").html("<i class=\"glyphicon xlarge rewind\"></i>");
 	$("#message").show();
@@ -870,12 +871,12 @@ Player.prototype.rewind = function()
 
 Player.prototype.forward = function()
 {
-	var pos = Number(this.media.playPosition);
-	var total = Number(this.media.playTime);
+	var pos = Number(this.media.currentTime);
+	var total = Number(this.media.duration);
 	this.scanStep = this.getSeekIncrement(total);
 
-	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1000;
-	this.media.seek(pos);
+	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1;
+	this.media.currentTime = pos;
 	
 	$("#message").html("<i class=\"glyphicon xlarge forward\"></i>");
 	$("#message").show();
@@ -885,22 +886,21 @@ Player.prototype.forward = function()
 Player.prototype.pause = function()
 {
 	//$("#play").focus();
-	this.setProgressByMS(this.media.playPosition);
+	this.setProgress(this.media.currentTime);
 	clearInterval(this.timer);
-	this.media.play(0);
+	this.media.pause();
 };
 
 Player.prototype.stop = function()
 {
 	//$("#play").focus();
 	clearInterval(this.timer);	
-	this.media.stop();	
 	history.back(1);
 };
 
-Player.prototype.seek = function(timeMS)
+Player.prototype.seek = function(time)
 {
-	this.media.seek(timeMS);
+	this.media.currentTime = time;
 };
 
 Player.prototype.enableSubtitles = function(key)

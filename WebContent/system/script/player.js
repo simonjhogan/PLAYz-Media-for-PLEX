@@ -189,11 +189,16 @@ Player.prototype.initialise = function()
 		}
 	}.bind(this));
 	
-	this.media.onError = function() {
-		var error = document.getElementById("player").error;
-		$("#message").text("Error: " + error);
+	this.media.addEventListener('error', function(e) {
+		var error = e.target.error.code;
+		$("#message").text("Error: #" + error);
 		$("#message").show();	
-	};
+	});
+	this.mediaSource.addEventListener('error', function(e) {
+		var error = e.target.src;
+		$("#message").text("Error loading: " + error);
+		$("#message").show();	
+	});
 	
 	this.progessbar = $("#progressbar-container").progressbar({width: "600px", height: "8px"});
 

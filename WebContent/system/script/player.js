@@ -43,6 +43,7 @@ Player.prototype.initialise = function()
 	this.plex = new PLEX();
 	this.key = $.querystring().key;
 	this.media = document.getElementById("player");		
+	this.mediaSource = document.getElementById("mediaSource");		
 
 	//Direct play via standalone player
 	if (self.directPlay) {
@@ -179,6 +180,14 @@ Player.prototype.initialise = function()
 		}	
 	};
 	*/
+	
+	// seek() after load()
+	this.media.addEventListener('canplay', function() {
+		if (this.seekNewTime) {
+			this.seek(this.seekNewTime);
+			this.seekNewTime = 0;
+		}
+	}.bind(this));
 	
 	this.media.onError = function() {
 		var error = document.getElementById("player").error;
@@ -366,7 +375,8 @@ Player.prototype.openMedia = function(key)
 			}			
 			
 			//Integrated player
-			self.media.src = self.plex.getServerUrl() + self.mediaUrl;
+			self.mediaSource.src = self.plex.getServerUrl() + self.mediaUrl;
+			self.media.load();
 			if ($(xml).find("Stream[streamType='2']").length <= 1) {
 				$("#language").hide();		
 			} else {
@@ -380,7 +390,8 @@ Player.prototype.openMedia = function(key)
 			}
 		} else {
 			//Transcode HLS - Chrome/Web profile
-			self.media.src = self.plex.getHlsTranscodeUrl(self.key);			
+			self.mediaSource.src = self.plex.getHlsTranscodeUrl(self.key);			
+			self.media.load();
 		}
 		self.hideLoader();
 		
@@ -905,14 +916,36 @@ Player.prototype.seek = function(time)
 
 Player.prototype.enableSubtitles = function(key)
 {	
+	this.seekNewTime = Number(this.media.currentTime);
+
 	if (key != "undefined") {
-		this.media.subtitle = this.plex.getServerUrl() + key;
-		this.media.subtitleOn = true;
+		
+		var mediaOption = escape(JSON.stringify({
+			"option" : {
+				"subtitle" : {
+					"uri" : this.plex.getServerUrl() + key,
+					"show" : true
+				}
+			}
+		}));
+		this.mediaSource.setAttribute("type", "video/mp4;mediaOption=" + mediaOption);
+		this.media.load();
+		
 		$("#message").html("Subtitles On");
 		$("#message").show();
 		$("#message").fadeOut(3000);	
 	} else {
-		this.media.subtitleOn = true;
+		
+		var mediaOption = escape(JSON.stringify({
+			"option" : {
+				"subtitle" : {
+					"show" : true
+				}
+			}
+		}));
+		this.mediaSource.setAttribute("type", "video/mp4;mediaOption=" + mediaOption);
+		this.media.load();
+		
 		$("#message").html("Integrated Subtitles On");
 		$("#message").show();
 		$("#message").fadeOut(3000);		
@@ -921,8 +954,11 @@ Player.prototype.enableSubtitles = function(key)
 
 Player.prototype.disableSubtitles = function(hideMessage)
 {
-	this.media.subtitleOn = false;
-	//this.media.subtitle = "";
+	this.seekNewTime = Number(this.media.currentTime);
+	
+	this.mediaSource.setAttribute("type", "video/mp4");
+	this.media.load();
+	
 	if (!hideMessage) {
 		$("#message").html("Subtitles Off");
 		$("#message").show();

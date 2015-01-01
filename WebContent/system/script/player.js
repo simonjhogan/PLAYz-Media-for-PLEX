@@ -196,8 +196,10 @@ Player.prototype.initialise = function()
 	});
 	this.mediaSource.addEventListener('error', function(e) {
 		var error = e.target.src;
-		$("#message").text("Error loading: " + error);
-		$("#message").show();	
+		if (error) {
+			$("#message").text("Error loading: " + error);
+			$("#message").show();
+		}
 	});
 	
 	this.progessbar = $("#progressbar-container").progressbar({width: "600px", height: "8px"});

@@ -976,10 +976,15 @@ Player.prototype.disableSubtitles = function(hideMessage)
 Player.prototype.setAudoLanguage = function(key, label)
 {
 	var code = this.getLanguageCode(key);
+	var success = false;
 	
 	if (code.length > 0) {
-		this.media.audioLanguage = code;
-		$("#message").html("Audio: " + label + " (" + code + ")");
+		
+		for (var i = 0; this.media.audioTracks && i < this.media.audioTracks.length; i++)
+			if (this.media.audioTracks[i].enabled = (this.media.audioTracks[i].language == code))
+				success = true;
+		
+		$("#message").html(success ? "Audio: " + label + " (" + code + ")" : "Failed to set audio");
 		$("#message").show();
 		$("#message").fadeOut(3000);
 	}

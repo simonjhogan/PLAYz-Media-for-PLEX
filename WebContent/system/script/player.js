@@ -169,6 +169,9 @@ Player.prototype.initialise = function()
 	
 	this.media.addEventListener('seeked', function() {
 		this.hideLoader();
+		
+		// Change the progress bar position and time to reflect new time
+		this.setProgress(this.media.currentTime);
 	}.bind(this));
 	
 	this.media.addEventListener('waiting', function() {

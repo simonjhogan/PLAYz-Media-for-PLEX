@@ -26,6 +26,10 @@ body.xlarge {
 	font-size: 28px;	
 }
 
+video {
+	background-color: #000;
+}
+
 #applicationWallpaper {
 	position: absolute;
 	top: 0px;
@@ -144,7 +148,8 @@ a.selected {
 	position: absolute;
 	font-size: 18px;
 	top: 1px;
-	left: 950px;	
+	left: 50%;	
+	margin-left: 320px; /* progessbar.width / 2 + 20 */
 }
 
 #message {

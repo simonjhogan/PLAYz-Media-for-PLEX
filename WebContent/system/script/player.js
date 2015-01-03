@@ -106,11 +106,9 @@ Player.prototype.initialise = function()
 				self.plex.reportProgress(self.mediaKey, "paused", self.media.currentTime*1000);			
 	});
 	
-	// Connecting
+	// Loading
 	this.media.addEventListener('loadstart', function() {
-				$("#message").html("Connecting");
-				$("#message").show();
-				$("#message").fadeOut(5000);
+		self.showLoader("Loading");
 	});
 	
 	// Finished

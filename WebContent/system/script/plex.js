@@ -188,7 +188,7 @@ PLEX.prototype.getMediaMetadata = function(key, callback) {
 };
 
 PLEX.prototype.reportProgress = function(key, state, time) {
-	$.get(this.getServerUrl() + "/:/progress?key=" + key + "&identifier=com.plexapp.plugins.library&time=" + time + "&state=" + state, null);
+	$.get(this.getServerUrl() + "/:/progress?key=" + key + "&identifier=com.plexapp.plugins.library&time=" + Math.round(time) + "&state=" + state, null);
 };
 
 PLEX.prototype.setWatched = function(key, callback) {

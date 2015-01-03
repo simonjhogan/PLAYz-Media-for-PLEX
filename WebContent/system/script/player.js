@@ -116,7 +116,8 @@ Player.prototype.initialise = function()
 	// Finished
 	this.media.addEventListener('ended', function() {
 				clearInterval(self.timer);
-				//self.plex.reportProgress(self.mediaKey, "stopped", 0);
+				$.ajaxSetup({async: false}); // Make sure reportProgress is finished before history.back
+				self.plex.reportProgress(self.mediaKey, "stopped", 0);
 				var mediaGuid = $(self.cache).find("Video:first").attr("guid");
 				var mediaLength = $(self.cache).find("Video:first").attr("duration");
 				var mediaOffset = $(self.cache).find("Video:first").attr("viewOffset");
@@ -137,6 +138,7 @@ Player.prototype.initialise = function()
 						self.plex.getMediaMetadata(parentKey + "/children", function(xml) {
 							var nextKey = $(xml).find("Video[index='" + (Number(mediaIndex)+1) + "']:first").attr("key");						
 							if (nextKey) {
+								$.ajaxSetup({async: true});
 								self.openMedia(nextKey);
 							} else {
 								history.back(1);	
@@ -902,6 +904,8 @@ Player.prototype.stop = function()
 	$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
 	$("#message").show();
 	$("#message").fadeOut(3000);
+	
+	$.ajaxSetup({async: false}); // Make sure reportProgress is finished before history.back
 	this.plex.reportProgress(this.mediaKey, "stopped", this.media.currentTime*1000);
 	
 	history.back(1);

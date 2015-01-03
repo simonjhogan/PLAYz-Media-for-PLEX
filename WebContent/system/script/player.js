@@ -155,10 +155,24 @@ Player.prototype.initialise = function()
 	
 	// seek() after load()
 	this.media.addEventListener('canplay', function() {
+		this.hideLoader();
 		if (this.seekNewTime) {
 			this.seek(this.seekNewTime);
 			this.seekNewTime = 0;
 		}
+	}.bind(this));
+	
+	// Loader
+	this.media.addEventListener('seeking', function() {
+		this.showLoader("Seeking");
+	}.bind(this));
+	
+	this.media.addEventListener('seeked', function() {
+		this.hideLoader();
+	}.bind(this));
+	
+	this.media.addEventListener('waiting', function() {
+		this.showLoader("Buffering");
 	}.bind(this));
 	
 	// Error

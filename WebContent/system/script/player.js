@@ -82,21 +82,8 @@ Player.prototype.initialise = function()
 		
 	}
 
-	/* @fixme
-	this.media.onPlayStateChange = function(event) {
-		var state = document.getElementById("player").playState;
-
-		switch(state) {
-			case 0: //Stopped
-				clearInterval(self.timer);
-				
-				$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
-				$("#message").show();
-				$("#message").fadeOut(3000);
-				self.plex.reportProgress(self.mediaKey, "stopped", self.media.currentTime*1000);			
-				break;
-				
-			case 1: //Playing
+	// Playing
+	this.media.addEventListener('play', function() {
 				if (self.resume) {
 					var t = setTimeout(function() {
 						self.seek(self.viewOffset);
@@ -108,26 +95,26 @@ Player.prototype.initialise = function()
 				$("#message").html("<i class=\"glyphicon xlarge play\"></i><br/>" + $(self.cache).find("Video:first").attr("title"));
 				$("#message").show();
 				$("#message").fadeOut(5000);	
-				break;
-				
-			case 2: //Paused
+	});
+	
+	// Paused
+	this.media.addEventListener('pause', function() {
 				clearInterval(self.timer);
 				
 				$("#message").html("<i class=\"glyphicon xlarge pause\"></i>");
 				$("#message").show();
-				this.plex.reportProgress(self.mediaKey, "paused", self.media.currentTime*1000);			
-				break;
-				
-			case 3: //Connecting
+				self.plex.reportProgress(self.mediaKey, "paused", self.media.currentTime*1000);			
+	});
+	
+	// Connecting
+	this.media.addEventListener('loadstart', function() {
 				$("#message").html("Connecting");
 				$("#message").show();
 				$("#message").fadeOut(5000);
-				break;
-				
-			case 4: //Buffering			
-				break;
-				
-			case 5: //Finished
+	});
+	
+	// Finished
+	this.media.addEventListener('ended', function() {
 				clearInterval(self.timer);
 				//self.plex.reportProgress(self.mediaKey, "stopped", 0);
 				var mediaGuid = $(self.cache).find("Video:first").attr("guid");
@@ -162,24 +149,7 @@ Player.prototype.initialise = function()
 				}
 				$("#message").fadeOut(3000);
 				$("#progressTime").text("");
-				break;
-				
-			case 6: //Error
-				clearInterval(self.timer);
-				var error = document.getElementById("player").error;				
-				$("#message").html("Error: " + error);
-				$("#message").show();
-				$("#message").fadeOut(3000);			
-				if (this.directPlay == true) {
-					this.directPlay = false;
-					self.transcode = true;
-					this.openMedia(this.key);
-				}
-				break;
-				
-		}	
-	};
-	*/
+	});
 	
 	// seek() after load()
 	this.media.addEventListener('canplay', function() {
@@ -189,16 +159,31 @@ Player.prototype.initialise = function()
 		}
 	}.bind(this));
 	
+	// Error
 	this.media.addEventListener('error', function(e) {
 		var error = e.target.error.code;
+		clearInterval(self.timer);
 		$("#message").text("Error: #" + error);
 		$("#message").show();	
+		$("#message").fadeOut(3000);			
+		if (self.directPlay == true) {
+			self.directPlay = false;
+			self.transcode = true;
+			self.openMedia(self.key);
+		}
 	});
 	this.mediaSource.addEventListener('error', function(e) {
 		var error = e.target.src;
 		if (error) {
+			clearInterval(self.timer);
 			$("#message").text("Error loading: " + error);
 			$("#message").show();
+			$("#message").fadeOut(3000);
+			if (self.directPlay == true) {
+				self.directPlay = false;
+				self.transcode = true;
+				self.openMedia(self.key);
+			}
 		}
 	});
 	
@@ -913,6 +898,12 @@ Player.prototype.stop = function()
 {
 	//$("#play").focus();
 	clearInterval(this.timer);	
+	
+	$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
+	$("#message").show();
+	$("#message").fadeOut(3000);
+	this.plex.reportProgress(this.mediaKey, "stopped", this.media.currentTime*1000);
+	
 	history.back(1);
 };
 

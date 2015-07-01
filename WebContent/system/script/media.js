@@ -28,8 +28,13 @@ function Media()
 	
 	this.viewStart = 0;
 	this.viewTotal = 0;
-	this.viewSize = 80;
 	this.viewCurrent = 0;
+
+	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "allItems") == "1") {
+	    this.viewSize = 1000000; // number of items per page, basically unlimited	    
+	} else {
+	    this.viewSize = 80; // number of items per page
+	}
 	
 		
 };

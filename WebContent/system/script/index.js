@@ -792,6 +792,11 @@ Menu.prototype.optionsDialog = function(event)
 		$("#options a#optionSmallPictures i").addClass("check");	
 	}
 	
+	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "allItems") == "1") {
+	    $("#options a#optionAllItems i").removeClass("unchecked");
+	    $("#options a#optionAllItems i").addClass("check");
+	}
+	
 	$("#options").show();
 	$("#options a").off();
 	$("#options a").hover(function() {
@@ -900,6 +905,11 @@ Menu.prototype.optionsDialog = function(event)
 		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "smallPicutres");		
 	});
 	
+	$("#options a#optionAllItems").click(function (event) {
+	    event.preventDefault();
+	    self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "allItems");
+	});
+		
 	$("#options a, #options input, #options button").keydown(function(event) {
 		
 		// Up Arrow		

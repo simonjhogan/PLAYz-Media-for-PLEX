@@ -429,6 +429,8 @@ Player.prototype.resumeDialog = function(ms)
 	var html = "<a data-key-index=\"100\" id=\"resume\" href=\"\"><span class=\"option\">Resume from " + time + "</span></a>";
 	html += "<a data-key-index=\"101\" id=\"start\" href=\"\"><span class=\"option\">Start from beginning</span></a>";
 	$("#dialog .content").html(html);
+	
+	self.pause();
 
 	$("#dialog a").off();
 	

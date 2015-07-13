@@ -80,7 +80,12 @@ MediaMetadata.prototype.initialise = function()
 		if (event.which == 461 || event.which == 27) {
 			event.preventDefault();
 			history.back(1);
-		}	
+		}
+
+        // red or ) reset settings
+		if (event.which == 403 || event.which == 122) {
+		    self.plex.panic();
+		}
 	});
 	
 	$("#menu a").mouseenter(function() {

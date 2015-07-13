@@ -19,7 +19,7 @@ function PLEX() {
 	this.LG_PLEX_SERVER = "plexServerUrl";
 	this.PLEX_OPTIONS_PREFIX = "plexOptions-";	
 	this.PLEX_CACHE = "cache:";
-
+	this.PLEX_SHOW_HIDDEN_FILES = "plexHiddenFiles";
 	this.X_Plex_Client_Identifier = localStorage.getItem(this.PLEX_SESSION_ID);
 	this.X_Plex_Product = "Web%20Client";
 	this.X_Plex_Device= "Mac";
@@ -33,6 +33,32 @@ function PLEX() {
 };
 
 // Configuration & Settings
+PLEX.prototype.getShouldShowHiddenFiles = function () {
+    
+    if (!localStorage.getItem(this.PLEX_SHOW_HIDDEN_FILES) || localStorage.getItem(this.PLEX_SHOW_HIDDEN_FILES) == "") {
+            this.setShouldShowHiddenFiles("false");
+            return false;
+	} else {
+            if (localStorage.getItem(this.PLEX_SHOW_HIDDEN_FILES) == "true") {
+                return true;
+            } else {
+                return false;
+            }
+	}
+};
+
+PLEX.prototype.setShouldShowHiddenFiles = function(value) {
+    localStorage.setItem(this.PLEX_SHOW_HIDDEN_FILES, value);
+};
+
+PLEX.prototype.isMarkedAsHidden = function (item, val) {
+    if ($(item).attr(val).length != 0) {
+        return ($(item).attr(val).indexOf("[p]") != -1 || $(item).attr(val).indexOf("[P]") != -1);
+    } else {
+        return false;
+    }
+};
+
 PLEX.prototype.setServerUrl = function(url) {
 	localStorage.setItem(this.LG_PLEX_SERVER, url); 
 };
@@ -91,6 +117,84 @@ PLEX.prototype.getMediaType = function(title, sectionType) {
 PLEX.prototype.getPlaylists = function (callback) {
     $.get(this.getServerUrl() + "/playlists/all", callback); //all is for unfiltered
 };
+
+PLEX.prototype.removeHiddenToken = function (title) {
+    return title.replace('[p]', '').replace('[P]','');
+}
+PLEX.prototype.isTreeContainsHiddenFiles = function(item, filter)
+{
+    
+    var containsHiddenContent = false;
+    var self = this;
+
+    if (filter == "search") { //need to check if parent directory of the item is hidden
+        $.ajax({
+            type: "GET",
+            url: self.getServerUrl() + $(item).attr("key"),
+            dataType: "xml",
+            async: false,
+            success: function (data) {
+                $(data).find("MediaContainer").each(function (index, item) {
+                    containsHiddenContent = self.isMarkedAsHidden(item, "librarySectionTitle"); //check if the original section it was is marked as hidden
+                    if (containsHiddenContent) {
+                        return true;
+                    }
+                });
+            }
+        });
+    } else {
+        // this function for now only checks playlists
+        if ($(item).attr("type") != "playlist") {
+            return false;
+        }
+
+
+
+        $.ajax({
+            type: "GET",
+            url: self.getServerUrl() + $(item).attr("key"),
+            dataType: "xml",
+            async: false,
+            success: function (data) {
+                $(data).find("Video").each(function (index, item) {
+                    if (!containsHiddenContent) //once true it stays true
+                    {
+                        containsHiddenContent = "bla3";
+                        $.ajax({
+                            type: "GET",
+                            url: self.getServerUrl() + $(item).attr("key"),
+                            dataType: "xml",
+                            async: false,
+                            success: function (data2) {
+
+                                $(data2).find("MediaContainer").each(function (index, item) {
+                                    containsHiddenContent = self.isMarkedAsHidden(item, "librarySectionTitle"); //check if the original section it was is marked as hidden
+                                    if (containsHiddenContent) {
+                                        return true;
+                                    }
+                                });
+
+                                if (!containsHiddenContent) {
+                                    $(data2).find("Video").each(function (index, item) { // check if the file itself is hidden
+                                        containsHiddenContent = self.isMarkedAsHidden(item, "title"); //check if the original section it was is marked as hidden
+                                        if (containsHiddenContent) {
+                                            return true;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+    }
+	
+	
+    return containsHiddenContent;
+};
+
 PLEX.prototype.getSections = function(callback) {
 	$.get(this.getServerUrl() + "/library/sections", callback);
 };
@@ -327,7 +431,6 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 			html += "<div class=\"subtitle alt\">" + title + "</div>";			
 			html += "</a></li>";	
 			break;			
-//todog currently ignored from BiggedClass modifications when merged (look in bc3)			
 	    	case "playlist":
 	        	html = "<li class=\"media " + biggerClass + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" href>";
 		        html += "<div class=\"thumb " + biggerClass + "\" data-original=\"" + this.getTranscodedPath(metadata.thumb, width, height, true) + "\"></div>";
@@ -810,3 +913,23 @@ PLEX.prototype.ping = function() {
 PLEX.prototype.getSessionID = function() {
 	return (Math.random().toString(16)).substr(2) + (Math.random().toString(16)).substr(2);
 };
+// panic function to restart the parent control
+PLEX.prototype.panic = function () {
+    this.setShouldShowHiddenFiles("false");
+    this.removeServerUrl();
+
+//history.replaceState(null, document.title, location.pathname+"#!/stealingyourhistory");
+    location.href = "index.html";
+	window.close();
+
+// history.replaceState(null, document.title, location.pathname+"#!/stealingyourhistory");
+// //history.pushState(null, document.title, location.pathname);
+
+// window.addEventListener("popstate", function() {
+  // if(location.hash === "#!/stealingyourhistory") {
+	// history.replaceState(null, document.title, location.pathname);
+	// location.replace("index.html");
+	
+  // }
+// }, false);
+}

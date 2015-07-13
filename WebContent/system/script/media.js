@@ -77,6 +77,7 @@ Media.prototype.initialise = function()
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
 		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
+		html += "<tr><th>show hidden files</td><th>" + self.plex.getShouldShowHiddenFiles() + "</td></tr>";
 		
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
@@ -97,7 +98,10 @@ Media.prototype.initialise = function()
 				break;
 								
 			case 33:
-			case 403:
+		    case 403:
+      
+                	self.plex.panic();
+		        break;
 			case 412: //Prev page
 				self.prevPage();
 				break;
@@ -436,85 +440,93 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 				$("#title").html($container.attr("title1") + " - " + $container.attr("title2") + page);
 				break;
 		}
-	
-			$(xml).find("Directory,Video,Photo,Artist,Track,Playlist").each(function (index, item) {
-		        var mediaType;
-		        var art;
-		        var thumb;
-		        var actualKey;
-		        thumb = $(this).attr("thumb");
-		        art = $(this).attr("art");
-		        actualKey = $(this).attr("key");
+		var shouldShowInSearch = true;
 
-		        switch (section) {
-		            case "playlists":
-		                if (key == "playlists") {
-		                    mediaType = "playlist";
-		                    thumb = $(this).attr("composite");
-		                    actualKey = $(this).attr("ratingKey");
-		                } else { //behave like any other media, since we handle the actual items in the playlist now and not the playlist itself
-		                    mediaType = $(this).attr("type");
-		                }
+			$(xml).find("Directory,Video,Photo,Artist,Track,Playlist").each(function (index, item) {
+
+			    if (shouldShowInSearch && (self.plex.getShouldShowHiddenFiles() || (!self.plex.isMarkedAsHidden(item, "title") && !self.plex.isTreeContainsHiddenFiles(item, filter)))) { //will enter here for every type of content! ehowever we change inside if its playlist. in the future we can expand it to channels or to remove the branching all otgether and check everything, meanig the we could set individual movies to private
+
+		            var mediaType;
+		            var art;
+		            var thumb;
+		            var actualKey;
+		            thumb = $(this).attr("thumb");
+		            art = $(this).attr("art");
+		            actualKey = $(this).attr("key");
+
+		            switch (section) {
+		                case "playlists":
+		                    if (key == "playlists") {
+		                        mediaType = "playlist";
+		                        thumb = $(this).attr("composite");
+		                        actualKey = $(this).attr("ratingKey");
+		                    } else { //behave like any other media, since we handle the actual items in the playlist now and not the playlist itself
+		                        mediaType = $(this).attr("type");
+		                    }
 
 		                    break;
-		            case "channels":
-		                if (key == "channels") {
-		                    mediaType = "channel";
-		                } else { //behave like any other media, since we handle the actual items in the playlist now and not the playlist itself
+		                case "channels":
+		                    if (key == "channels") {
+		                        mediaType = "channel";
+		                    } else { //behave like any other media, since we handle the actual items in the playlist now and not the playlist itself
+		                        mediaType = $(this).attr("type");
+		                    }
+		                    break;
+		                default:
 		                    mediaType = $(this).attr("type");
-		                }
-		                break;
-		            default:
-		                mediaType = $(this).attr("type");
-		               break;
-		        }
+		                    break;
+		            }
                     
-			if (localStorage.getItem(self.PLEX_VIEW_MODE) == "list") {
-				html = self.plex.getListHtml(index, $(this).attr("title"), self.section, mediaType, actualKey, 
-					{"artist": $(this).attr("parentTitle"), 
-					"art": art,
-					"series": $(this).attr("grandparentTitle"), 
-					"season": $(this).attr("parentIndex"), 
-					"episode": $(this).attr("index"),
-					"index": $(this).attr("index"),
-					"year": $(this).attr("year"),
-					"parentKey": $(this).attr("parentKey"),
-					"media": $(this).find("Media Part:first").attr("key"),
-					"lastViewedAt": $(this).attr("lastViewedAt"),
-					"viewOffset": $(this).attr("viewOffset"),
-					"viewCount": $(this).attr("viewCount"),	
-					"leafCount": $(this).attr("leafCount"),	
-					"viewedLeafCount": $(this).attr("viewedLeafCount"),						
-					"filter": self.filter,
-					"sectionKey": actualKey,
-	                                "section": mediaType
-					});					
-			} else {
-				html = self.plex.getThumbHtml(index, $(this).attr("title"), self.section, mediaType, actualKey,
-					{"thumb": thumb,
-					"parentThumb": $(this).attr("parentThumb"), 
-					"grandparentThumb": $(this).attr("grandparentThumb"),
-					"art": art,
-					"artist": $(this).attr("parentTitle"), 
-					"series": $(this).attr("grandparentTitle"), 
-					"season": $(this).attr("parentIndex"), 
-					"episode": $(this).attr("index"),
-					"index": $(this).attr("index"),
-					"parentKey": $(this).attr("parentKey"),
-					"media": $(this).find("Media Part:first").attr("key"),
-					"lastViewedAt": $(this).attr("lastViewedAt"),
-					"viewOffset": $(this).attr("viewOffset"),
-					"viewCount": $(this).attr("viewCount"),	
-					"leafCount": $(this).attr("leafCount"),	
-					"viewedLeafCount": $(this).attr("viewedLeafCount"),						
-					"filter": self.filter,
-					"sectionKey": actualKey,
-					"containerArt": $(xml).find("MediaContainer:first").attr("art"),
-					"containerThumb": $(xml).find("MediaContainer:first").attr("thumb"),
-	                                "section": mediaType
-					});	
-				}
-			$("#mediaViewContent ul").append(html);
+
+		            if (localStorage.getItem(self.PLEX_VIEW_MODE) == "list") {
+		                html = self.plex.getListHtml(index, self.plex.removeHiddenToken($(this).attr("title")), self.section, mediaType, actualKey,
+                            {
+                                "artist": $(this).attr("parentTitle"),
+                                "art": art,
+                                "series": $(this).attr("grandparentTitle"),
+                                "season": $(this).attr("parentIndex"),
+                                "episode": $(this).attr("index"),
+                                "index": $(this).attr("index"),
+                                "year": $(this).attr("year"),
+                                "parentKey": $(this).attr("parentKey"),
+                                "media": $(this).find("Media Part:first").attr("key"),
+                                "lastViewedAt": $(this).attr("lastViewedAt"),
+                                "viewOffset": $(this).attr("viewOffset"),
+                                "viewCount": $(this).attr("viewCount"),
+                                "leafCount": $(this).attr("leafCount"),
+                                "viewedLeafCount": $(this).attr("viewedLeafCount"),
+                                "filter": self.filter,
+                                "sectionKey": actualKey,
+                                "section": mediaType
+                            });
+		            } else {
+		                html = self.plex.getThumbHtml(index, self.plex.removeHiddenToken($(this).attr("title")), self.section, mediaType, actualKey,
+                            {
+                                "thumb": thumb,
+                                "parentThumb": $(this).attr("parentThumb"),
+                                "grandparentThumb": $(this).attr("grandparentThumb"),
+                                "art": art,
+                                "artist": $(this).attr("parentTitle"),
+                                "series": $(this).attr("grandparentTitle"),
+                                "season": $(this).attr("parentIndex"),
+                                "episode": $(this).attr("index"),
+                                "index": $(this).attr("index"),
+                                "parentKey": $(this).attr("parentKey"),
+                                "media": $(this).find("Media Part:first").attr("key"),
+                                "lastViewedAt": $(this).attr("lastViewedAt"),
+                                "viewOffset": $(this).attr("viewOffset"),
+                                "viewCount": $(this).attr("viewCount"),
+                                "leafCount": $(this).attr("leafCount"),
+                                "viewedLeafCount": $(this).attr("viewedLeafCount"),
+                                "filter": self.filter,
+                                "sectionKey": actualKey,
+                                "containerArt": $(xml).find("MediaContainer:first").attr("art"),
+                                "containerThumb": $(xml).find("MediaContainer:first").attr("thumb"),
+                                "section": mediaType
+                            });
+		            }
+		            $("#mediaViewContent ul").append(html);
+		    }
 		});
 		
 		$(".thumb").lazyload({

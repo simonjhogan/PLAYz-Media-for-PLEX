@@ -72,7 +72,7 @@ Player.prototype.initialise = function()
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
 		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
-		
+		html += "<tr><th>show hidden files</td><th>" + self.plex.getShouldShowHiddenFiles() + "</td></tr>";
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
 		}
@@ -230,7 +230,9 @@ Player.prototype.initialise = function()
 			}
 			return;
 		}
-		
+		if (event.which == 403 || event.which == 122) {
+		    self.plex.panic();
+		}
 		self.showControls();
 	});	
 	
@@ -693,6 +695,11 @@ Player.prototype.initControls = function()
 			return;
 		}	
 		
+		// red or ) reset settings
+		if (event.which == 403 || event.which == 122) {
+		    self.plex.panic();
+		    return;
+		}
 		self.showControls();
 	});	
 	

@@ -88,6 +88,9 @@ PLEX.prototype.getMediaType = function(title, sectionType) {
 };
 
 // Media library functions 
+PLEX.prototype.getPlaylists = function (callback) {
+    $.get(this.getServerUrl() + "/playlists/all", callback); //all is for unfiltered
+};
 PLEX.prototype.getSections = function(callback) {
 	$.get(this.getServerUrl() + "/library/sections", callback);
 };
@@ -96,12 +99,12 @@ PLEX.prototype.getSectionDetails = function(key, callback) {
 	$.get(this.getServerUrl() + "/library/sections/" + key , callback);
 };
 
-PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback, options) {
+
+PLEX.prototype.getSectionMedia = function(section, key, filter, filterKey, callback, options) {
 	var jsonCallback = 'callback' + new Date().getTime();
 	var self = this;
 	var page = "";
-	var url = "";
-	
+
     options = options || {};
     
     var start = options.start || -1;
@@ -117,34 +120,42 @@ PLEX.prototype.getSectionMedia = function(key, filter, filterKey, callback, opti
 			case "all": 
 				filter = decodeURIComponent(filterKey);
 				if (filter.indexOf("?") > -1) {
-					url = this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time + page;
-					//$.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time + page, callback);
+					$.get(this.getServerUrl() + filter + "&X-Plex-Access-Time=" + this.time + page, callback);
 				} else {
-					url = this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time + page;
-					//$.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time + page, callback);
+					$.get(this.getServerUrl() + filter + "?X-Plex-Access-Time=" + this.time + page, callback);
 				}
 				break;
 
 			case "search": 
-				url = this.getServerUrl() + "/search?query=" + filterKey + page;
-				//$.get(this.getServerUrl() + "/search?query=" + filterKey + page , callback);
+				$.get(this.getServerUrl() + "/search?query=" + filterKey + page , callback);
 				break;
 								
 			default:
-				url = this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time + page;
-				//$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time + page, callback);
+				$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "/" + filterKey + "?X-Plex-Access-Time=" + this.time + page, callback);		
 				break;
 		}
 	} else {
-		if (key == "channels") {
-			self.getChannels(key, callback);
-			return;
-		} else {
-			url = this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time + page;
-			//$.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time + page, callback);	
-		}
+	    switch(section) {
+	        case "channels":
+	            if (key == "channels") {
+	                self.getChannels(key, callback);
+	            } else {
+	                $.get(this.getServerUrl() + key, callback);
+	            }
+	            break;
+	        case "playlists":
+	            if (key == "playlists") {
+	                self.getPlaylists(callback);
+	            } else {
+	                $.get(this.getServerUrl() + "/playlists/" + key + "/items/", callback);
+                }
+	            
+	            break;
+	        default:
+	            $.get(this.getServerUrl() + "/library/sections/" + key + "/" + filter + "?X-Plex-Access-Time=" + this.time + page, callback);
+	            break;
+	    }
 	}
-	$.get(url, callback);
 };
 
 PLEX.prototype.getRecentlyAdded = function(key, callback) {
@@ -172,7 +183,10 @@ PLEX.prototype.getMediaItems = function(section, key, callback) {
 		case "channels":
 			this.getChannels(key, callback);
 			break;
-			
+		
+	    	case "playlists":
+	        	break;
+
 		default:
 			this.getRecentlyAdded(key, callback);
 			break;
@@ -313,8 +327,15 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 			html += "<div class=\"subtitle alt\">" + title + "</div>";			
 			html += "</a></li>";	
 			break;			
-			
-		case "album":				
+//todog currently ignored from BiggedClass modifications when merged (look in bc3)			
+	    	case "playlist":
+	        	html = "<li class=\"media " + biggerClass + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" href>";
+		        html += "<div class=\"thumb " + biggerClass + "\" data-original=\"" + this.getTranscodedPath(metadata.thumb, width, height, true) + "\"></div>";
+		        html += "<div class=\"subtitle alt\">" + title + "</div>";
+		        html += "</a></li>";
+		        break;
+
+	    	case "album":
 			html = "<li class=\"media " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-parent-key=\"" + metadata.parentKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" href>";
 			html += "<div class=\"thumb\" data-original=\"" + this.getTranscodedPath(metadata.thumb, 190, 190) + "\"></div>";
 			if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "titleOverlay") != "1"){if (metadata.artist) {html += "<div class=\"title\">" + metadata.artist + "</div>";};};
@@ -327,7 +348,16 @@ PLEX.prototype.getThumbHtml = function(index, title, sectionType, mediaType, key
 			html += "<div class=\"track-title\"><i class=\"glyphicon\"></i>" + metadata.index + ". " + title + "</div>";			
 			html += "</a></li>";	
 			break;
-
+	    	case "clip":
+	        
+		        html = "<li class=\"media " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" data-media=\"" + metadata.media + "\" href>";
+		        html += "<div class=\"thumb\" data-original=\"" + this.getTranscodedPath(metadata.thumb, 128, 190) + "\"></div>";
+		        if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "titleOverlay") != "1") { html += "<div class=\"subtitle alt\">" + title + "</div>"; };
+		        if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "watchedIcons") != "1") {
+		            html += "<div class=\"watchedStatus\">" + this.getWatchedIconHtml(metadata.lastViewedAt, metadata.viewOffset, metadata.viewCount, metadata.duration) + "</div>";
+		        }
+		        html += "</a></li>";
+		        break;
 
 		default:				
 			html = "<li class=\"media " + metadata.filter + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\"";
@@ -355,7 +385,8 @@ PLEX.prototype.getListHtml = function(index, title, sectionType, mediaType, key,
 		case "show":			
 		case "artist":
 		case "album":				
-			html = "<li class=\"list " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-parent-key=\"" + metadata.parentKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" data-art=\"" + metadata.art + "\" href>";
+	    	case "playlist":
+			html = "<li class=\"list " + mediaType + "\"><a data-key-index=\"" + index + "\" data-title=\"" + title + "\" data-key=\"" + key + "\" data-section-key=\"" + metadata.sectionKey + "\" data-parent-key=\"" + metadata.parentKey + "\" data-section-type=\"" + sectionType + "\" data-media-type=\"" + mediaType + "\" href>";
 			html += "<span class=\"listTitle\">" + title + "</div>";
 			if (metadata.year) {
 				html += "<span class=\"listYear\">" + metadata.year + this.getWatchedIconHtml(metadata.lastViewedAt, metadata.viewOffset, metadata.viewCount, metadata.duration) + "</div>";
@@ -460,11 +491,13 @@ PLEX.prototype.getMediaPreviewHtml = function(xml) {
 	var subtitleStream = $(xml).find("Media:first Stream[streamType='3'][selected='1']").length > 0 ? $(xml).find("Media:first Stream[streamType='3'][selected='1']") : $(xml).find("Media:first Stream[streamType='3']");	
 	
 	var html = "<div class=\"" + mediaType + "\">";
-	 
-	switch(mediaType) {
+	var remote = false;
+	switch (mediaType) {
+	    case "clip":
+	        remote = true;
 		case "movie":
 			html += "<div class=\"leftColumn\">";
-			html += "<div class=\"cover\" style=\"background-image: url('" + this.getTranscodedPath(mediaItem.attr("thumb"), 300, 440) + "')\"></div>";
+			html += "<div class=\"cover\" style=\"background-image: url('" + this.getTranscodedPath(mediaItem.attr("thumb"), 300, 440, remote) + "')\"></div>";
 
 			html += "<div class=\"media\">";
 			if (mediaItemFile.attr("videoResolution")) { html += "<img src=\"" + this.getTranscodedMediaFlagPath("videoResolution", mediaItemFile.attr("videoResolution"), 100, 20) + "\"/>"; } 

@@ -154,7 +154,7 @@ Media.prototype.initialise = function()
 	
 	switch($.querystring().action) {
 		case "view":
-			if (this.section == "channels") {
+		    	if (this.section == "channels" || this.section == "playlists") {
 				$("#filter").hide();
 			} else {
 				this.loadMenu(this.section, this.key);
@@ -210,7 +210,7 @@ Media.prototype.nextPage = function()
 		
 		switch($.querystring().action) {
 			case "view":
-				if (this.section == "channels") {
+			    	if (this.section == "channels" || this.section == "playlists") {
 					$("#filter").hide();
 				} else {
 					this.loadMenu(this.section, this.key);
@@ -236,7 +236,7 @@ Media.prototype.prevPage = function()
 					
 		switch($.querystring().action) {
 			case "view":
-				if (this.section == "channels") {
+				if (this.section == "channels" || this.section == "playlists") {
 					$("#filter").hide();
 				} else {
 					this.loadMenu(this.section, this.key);
@@ -391,10 +391,15 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 	this.showLoader("Loading");
 	$("#mediaViewContent ul").empty();
 	
+	if (section == "playlists" || section == "channels") {
+	    filter = "all";
+	}
+
 	//console.log(key + " " + filter + " " + filterKey);
 	
 	// Load section content	
-	self.plex.getSectionMedia(key, filter, filterKey, function(xml) {
+	self.plex.getSectionMedia(section, key, filter, filterKey, function (xml) {
+
 		var $container = $(xml).find("MediaContainer:first");
 		$("#title").stop(true, true);
 		$("#title").show();
@@ -410,8 +415,10 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 		
 		switch(filter) {
 			case "all":
-				if (key == "channels") {
+				if (section == "channels") {
 					$("#title").html("Channels");
+				} else if (section == "playlists") {
+				    $("#title").html("Playlists");
 				} else {
 					$("#title").html($container.attr("title2") + page);
 				}
@@ -430,11 +437,42 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 				break;
 		}
 	
-		$(xml).find("Directory,Video,Photo,Artist,Track").each(function(index, item) {
+			$(xml).find("Directory,Video,Photo,Artist,Track,Playlist").each(function (index, item) {
+		        var mediaType;
+		        var art;
+		        var thumb;
+		        var actualKey;
+		        thumb = $(this).attr("thumb");
+		        art = $(this).attr("art");
+		        actualKey = $(this).attr("key");
+
+		        switch (section) {
+		            case "playlists":
+		                if (key == "playlists") {
+		                    mediaType = "playlist";
+		                    thumb = $(this).attr("composite");
+		                    actualKey = $(this).attr("ratingKey");
+		                } else { //behave like any other media, since we handle the actual items in the playlist now and not the playlist itself
+		                    mediaType = $(this).attr("type");
+		                }
+
+		                    break;
+		            case "channels":
+		                if (key == "channels") {
+		                    mediaType = "channel";
+		                } else { //behave like any other media, since we handle the actual items in the playlist now and not the playlist itself
+		                    mediaType = $(this).attr("type");
+		                }
+		                break;
+		            default:
+		                mediaType = $(this).attr("type");
+		               break;
+		        }
+                    
 			if (localStorage.getItem(self.PLEX_VIEW_MODE) == "list") {
-				html = self.plex.getListHtml(index, $(this).attr("title"), self.section, $(this).attr("type"), $(this).attr("key"), 
+				html = self.plex.getListHtml(index, $(this).attr("title"), self.section, mediaType, actualKey, 
 					{"artist": $(this).attr("parentTitle"), 
-					"art": $(this).attr("art"),
+					"art": art,
 					"series": $(this).attr("grandparentTitle"), 
 					"season": $(this).attr("parentIndex"), 
 					"episode": $(this).attr("index"),
@@ -448,14 +486,15 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 					"leafCount": $(this).attr("leafCount"),	
 					"viewedLeafCount": $(this).attr("viewedLeafCount"),						
 					"filter": self.filter,
-					"sectionKey": key
+					"sectionKey": actualKey,
+	                                "section": mediaType
 					});					
 			} else {
-				html = self.plex.getThumbHtml(index, $(this).attr("title"), self.section, $(this).attr("type"), $(this).attr("key"), 
-					{"thumb": $(this).attr("thumb"),
+				html = self.plex.getThumbHtml(index, $(this).attr("title"), self.section, mediaType, actualKey,
+					{"thumb": thumb,
 					"parentThumb": $(this).attr("parentThumb"), 
 					"grandparentThumb": $(this).attr("grandparentThumb"),
-					"art": $(this).attr("art"),
+					"art": art,
 					"artist": $(this).attr("parentTitle"), 
 					"series": $(this).attr("grandparentTitle"), 
 					"season": $(this).attr("parentIndex"), 
@@ -469,9 +508,10 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 					"leafCount": $(this).attr("leafCount"),	
 					"viewedLeafCount": $(this).attr("viewedLeafCount"),						
 					"filter": self.filter,
-					"sectionKey": key,
+					"sectionKey": actualKey,
 					"containerArt": $(xml).find("MediaContainer:first").attr("art"),
-					"containerThumb": $(xml).find("MediaContainer:first").attr("thumb")
+					"containerThumb": $(xml).find("MediaContainer:first").attr("thumb"),
+	                                "section": mediaType
 					});	
 				}
 			$("#mediaViewContent ul").append(html);
@@ -529,7 +569,25 @@ Media.prototype.view = function(section, key, filter, filterKey, start)
 			if ($(this).is("[data-filter]")) {
 				url = "./media.html?action=view&section=" + self.section + "&key=" + $(this).data("sectionKey") + "&filter=" + self.filter + "&filterkey=" + encodeURIComponent($(this).data("key"));
 			} else {
-				url = "./item.html?action=preview&section=" + self.section + "&sectionKey=" + $(this).data("sectionKey") + "&key=" + encodeURIComponent($(this).data("key"));
+			    switch (self.section) {
+			        case "playlists":
+			            if (key == "playlists") {
+			                url = "media.html?action=view&section=" + self.section + "&key=" + $(this).data("sectionKey");
+			            } else {
+			                url = "./item.html?action=preview&section=" + $(this).data("section") + "&sectionKey=" + $(this).data("sectionKey") + "&key=" + encodeURIComponent($(this).data("key"));
+			            }
+			            break;
+			        case "channels":
+			            if ($(this).data("mediaType") != "channel") {
+			                url = "./item.html?action=preview&section=" + $(this).data("section") + "&sectionKey=" + $(this).data("sectionKey") + "&key=" + encodeURIComponent($(this).data("key")) + "&debug=" + $(this).data("mediaType");
+			            } else {
+			                url = "media.html?action=view&section=" + self.section + "&key=" + $(this).data("sectionKey") + "&debug=" + $(this).data("mediaType");
+			            }
+			            break;
+			        default:
+			            url = "./item.html?action=preview&section=" + self.section + "&sectionKey=" + $(this).data("sectionKey") + "&key=" + encodeURIComponent($(this).data("key"));
+			            break;
+			    }
 			}
 			$(this).attr("href", url);
 			location.href = url;

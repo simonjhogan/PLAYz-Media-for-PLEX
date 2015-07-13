@@ -216,11 +216,10 @@ Menu.prototype.initialise = function(focus)	{
 					$("#sections ul").append(html);
 				});
 		
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+1) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionOnDeck + "</a></li>");
-				//$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"channels\" data-key=\"channels\" data-section-type=\"channels\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionChannels + "</a></li>");
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionSearch + "</a></li>");
-				
-		
+					$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"playlists\" data-key=\"playlists\" data-section-type=\"playlists\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + "Playlists" + "</a></li>");
+					//$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"channels\" data-key=\"channels\" data-section-type=\"channels\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionChannels + "</a></li>");
+					$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionOnDeck + "</a></li>");
+					$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionSearch + "</a></li>");
 				// Add Event Handlers
 				$("#navigator #sections li a, #settings li a").off();
 				
@@ -333,7 +332,9 @@ Menu.prototype.initialise = function(focus)	{
 					case "options":
 						$("#optionTimeDisplay").focus();
 						break;						
-						
+					case "playlists":
+						//$("#scan").focus();
+					break;
 					default:
 						localStorage.setItem(self.PLEX_CURRENT_SECTION, event.key);
 						if ($("#recentlyAdded").hasClass("show-quick-menu")) {
@@ -354,7 +355,8 @@ Menu.prototype.initialise = function(focus)	{
 					case "photo":	
 					case "show":			
 					case "artist":	
-					case "channels":							
+				    	case "channels":
+				    	case "playlists":
 						self.showLoader("Loading");
 						location.href = "media.html?action=view&section=" + event.sectionType + "&key=" + event.key;
 						break;
@@ -395,7 +397,8 @@ Menu.prototype.initialise = function(focus)	{
 					case "show":			
 					case "artist":
 					case "ondeck":	
-					case "channels":							
+				   	case "channels":
+				    	case "playlists":
 						localStorage.setItem(self.PLEX_CURRENT_SECTION, event.key);	
 						self.quickSelectionMenu(event);
 						break;							
@@ -1042,7 +1045,7 @@ Menu.prototype.settingsDialog = function(init)
 		self.scanErrorCount = 0;
 		self.scanFoundCount = 0;
 		if (!ip) {
-			ip = "192.168.0.3";
+			ip = "10.0.0.1";
 		}
 		
 		self.showLoader("Scanning");

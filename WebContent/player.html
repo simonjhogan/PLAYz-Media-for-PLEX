@@ -30,18 +30,21 @@ $(document).ready(function() {
 <body>
 <div id="applicationWallpaper"></div>
 <div id="application">
-<object type="application/x-netcast-av"
+<video
     width="100%"
     height="100%"
-    autoStart="true"
+    autoplay="autoplay"
     id="player">
-</object>
+	<source type="video/mp4" id="mediaSource">
+</video>
 <div id="optionsLeft" class="options">
 <ul>
 	<li><a data-key-index="1" id="back" href="#" data-language-title="menuBack" title="Back"><i class="glyphicon circle-arrow-left"></i></a></li>
 	<li><a data-key-index="2" id="info" href="#" data-language-title="menuInfo" title="Info"><i class="glyphicon circle-info"></i></a></li>
+	<!--
 	<li><a data-key-index="3" id="qmenu" href="#" data-language-title="menuQMENU" title="QMENU"><i class="glyphicon cogwheel"></i></a></li>	
 	<li><a data-key-index="4" id="ratio" href="#" data-language-title="menuRatio" title="Ratio"><i class="glyphicon crop"></i></a></li>	
+	-->
 </ul>
 </div>
 <div id="controls" style="display: none;">

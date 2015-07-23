@@ -16,11 +16,18 @@ and limitations under the License.
 
 function Menu() {
 	this.PLEX_SESSION_ID = "plexSessionID";
+    	this.PLEX_PASSWORD_SEQUENCE = "plexPasswordSequence";
 	this.PLEX_CURRENT_SECTION = "plexCurrentSection";
 	this.PLEX_SERVER_LIST = "plexServerList";	
 	this.PLEX_CURRENT_PREFIX = "plexHomeSelected-";
 	this.PLEX_OPTIONS_PREFIX = "plexOptions-";
 	
+	this.currentPasswordSequence = [];
+	this.ischeckinfForPass = false;
+	this.isSettingPass = false;
+	this.tmpPassSequence = '';
+	this.pressedKeys = [];
+
 	this.plex = new PLEX();	
 	this.cache = "";
 	this.toggleActive = false;
@@ -62,6 +69,7 @@ function Menu() {
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
 		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
+		html += "<tr><th>show hidden files</td><th>" + self.plex.getShouldShowHiddenFiles() + "</td></tr>";
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
 		}
@@ -104,23 +112,66 @@ function Menu() {
 		self.serverSelection();
 	});
 	
-	$(document).keydown(function(event) {
-		// Reset settings - RED button or ( key
-		if (event.which == 403 || event.which == 122) {
-			if (confirm("Press OK to RESET settings ...")) {
-				self.plex.removeServerUrl();
-				location.reload();
-			}
-		}	
-		
-		if (event.which == 404 || event.which == 123) {
-			self.serverSelection();
-		}
-		
-		if (event.which == 461 || event.which == 27) {
-			self.close();
-		}		
+	$(document).keydown(function (event) {
+
+	    self.pressedKeys[event.which] = true;
+
+//	    $("#passwordMessage").text(self.pressedKeys);
+//	    $("#passwordMessage").show();
+
+	    if (self.isResetPasswordSequence()) {
+	        self.pressedKeys = [];
+	        return;
+	    }
+
+	    switch (event.which) {
+	        case 403: // Reset settings - RED button or ( key
+	        case 122:
+	            self.plex.panic();
+	            break;
+	        case 123:
+	            self.serverSelection();
+	            break;
+	        case 461:
+	        case 27:
+	            self.close();
+	            break
+	        default:
+	            if (!self.ischeckinfForPass && !self.isSettingPass) {
+
+	                // green key
+	                if (event.which == 404 || event.which == 123) {
+	                    self.serverSelection();
+	                }
+
+	                // yellow key 
+	                if (event.which == 405) {
+	                }
+
+	                // blue key
+	                if (event.which == 406) {
+	                    self.askforpass();
+	                }
+
+	            } else { //echo 5 key combination can be a password accept the already set ones
+	                if (event.which != 1536) { //1536 IS THE REMOTE MOVMENT.
+	                    if (self.isSettingPass) {
+	                        self.setPass(event.keyCode);
+	                    } else {
+	                        self.isPasswordApproved(event.keyCode);
+	                    }
+	                }
+	            }
+	            break;
+	    }
+	   
 	});
+
+
+	$(document).keyup(function(event) {
+	    self.pressedKeys[event.which] = false;
+	});
+
 	
 	$("#settings").hide();
 	
@@ -186,12 +237,128 @@ Menu.prototype.serverSelection = function()
 	}
 };
 
+
+Menu.prototype.askforpass = function()
+{
+
+    this.ischeckinfForPass = true;
+    this.currentPasswordSequence = [];
+
+    if (!localStorage.getItem(this.PLEX_PASSWORD_SEQUENCE) || localStorage.getItem(this.PLEX_PASSWORD_SEQUENCE) == "") {
+
+        $("#passwordMessage").text("Password is not set, please enter a combination of 5 blue,yellow,green");
+        $("#passwordMessage").show();
+
+        $("#passwordMessage").fadeOut(2000);
+
+        this.ischeckinfForPass = false;
+        this.isSettingPass = true;
+
+    } else {
+
+        $("#passwordMessage").text("Enter password sequence");
+        $("#passwordMessage").show();
+    }
+
+};
+
+Menu.prototype.isPasswordApproved = function (key) {
+    var ret = this.checkPass(key);
+
+    if (ret == 1) {
+        this.plex.setShouldShowHiddenFiles("true");
+        location.reload();
+    } else if (ret == 0) {
+        this.plex.setShouldShowHiddenFiles("false");
+        location.reload();
+    }
+};
+
+Menu.prototype.isResetPasswordSequence = function () {
+    // blue and red
+
+    if (this.pressedKeys[406] && this.pressedKeys[403]) {
+        $("#passwordMessage").text("Password resetted");
+        $("#passwordMessage").show();
+        $("#passwordMessage").fadeOut(1500);
+        localStorage.setItem(this.PLEX_PASSWORD_SEQUENCE, '');
+        return true;
+    }
+
+    return false;
+};
+Menu.prototype.setPass = function (key) {
+
+    if (this.ischeckinfForPass) {
+        var ret = this.checkPass(key);
+        if (ret == 1) {
+            localStorage.setItem(this.PLEX_PASSWORD_SEQUENCE, this.currentPasswordSequence.toString());
+        } else if (ret == 0) {
+            this.tmpPassSequence = '';
+        }
+    }
+    else {
+        this.currentPasswordSequence.push(key);
+
+        if (this.currentPasswordSequence.length == 5) {
+            this.tmpPassSequence = this.currentPasswordSequence.toString();
+
+            this.currentPasswordSequence = [];
+
+            $("#passwordMessage").text("Please Retype the password");
+            $("#passwordMessage").show();
+
+            this.ischeckinfForPass = true;
+        }
+    }
+};
+
+Menu.prototype.checkPass = function (key) {
+    
+    var pass = this.isSettingPass ? this.tmpPassSequence : localStorage.getItem(this.PLEX_PASSWORD_SEQUENCE);
+
+    this.currentPasswordSequence.push(key);
+    
+    if (this.currentPasswordSequence.toString().indexOf(pass) >= 0) {
+
+        $("#passwordMessage").text("Passsword accepted");
+        $("#passwordMessage").show();
+        $("#passwordMessage").fadeOut(1500);
+
+        this.ischeckinfForPass = false;
+        this.isSettingPass = false;
+
+        return 1;
+
+        
+        
+    } else if (this.currentPasswordSequence.length >= 5) {
+
+        this.currentPasswordSequence = [];
+
+        $("#passwordMessage").text("Wrong sequence entered");
+        $("#passwordMessage").show();
+        $("#passwordMessage").fadeOut(1500);
+
+        this.plex.setShouldShowHiddenFiles("false");
+        this.ischeckinfForPass = false;
+        this.isSettingPass = false;
+
+        return 0;
+
+    }
+
+    return 2;
+
+};
 Menu.prototype.initialise = function(focus)	{	
 	var self = this;
 	var pms = this.plex.getServerUrl();
 	
 	self.showLoader("Searching");
-				
+
+	$("#passwordMessage").hide();
+
 	//Check PMS Server Set
 	if (!pms || !this.isValidUrl(self.plex.getServerUrl())) {
 		self.hideLoader();
@@ -210,17 +377,26 @@ Menu.prototype.initialise = function(focus)	{
 				$("#sections ul").empty();
 				
 				$(xml).find("Directory").each(function(index, item) {
-					html = "<li><a data-key-index=\"" + index + "\" data-title=\"" + $(this).attr("title") + "\" data-key=\"" + $(this).attr("key") + "\" data-section-type=\"" + 
-							$(this).attr("type") + "\" data-art=\"" + self.plex.getTranscodedPath($(this).attr("art"), self.windowWidth, self.windowHeight) + "\" href>" +  $(this).attr("title")  + "</a></li>";	
-					i = index;		
-					$("#sections ul").append(html);
+				    if (self.plex.getShouldShowHiddenFiles()) {
+				        html = "<li><a data-key-index=\"" + index + "\" data-title=\"" + self.plex.removeHiddenToken($(this).attr("title")) + "\" data-key=\"" + $(this).attr("key") + "\" data-section-type=\"" +
+	                                    $(this).attr("type") + "\" data-art=\"" + self.plex.getTranscodedPath($(this).attr("art"), self.windowWidth, self.windowHeight) + "\" href>" + self.plex.removeHiddenToken($(this).attr("title")) + "</a></li>";
+				        i = index;
+				        $("#sections ul").append(html);
+				    }
+				    else  {
+				        if (!self.plex.isMarkedAsHidden(item, "title")) {
+				            html = "<li><a data-key-index=\"" + index + "\" data-title=\"" + $(this).attr("title") + "\" data-key=\"" + $(this).attr("key") + "\" data-section-type=\"" +
+	                                   $(this).attr("type") + "\" data-art=\"" + self.plex.getTranscodedPath($(this).attr("art"), self.windowWidth, self.windowHeight) + "\" href>" + $(this).attr("title") + "</a></li>";
+				            i = index;
+				            $("#sections ul").append(html);
+				        }
+				    }
 				});
 		
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+1) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionOnDeck + "</a></li>");
-				//$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"channels\" data-key=\"channels\" data-section-type=\"channels\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionChannels + "</a></li>");
-				$("#sections ul").append("<li><a data-key-index=\"" + (i+2) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionSearch + "</a></li>");
-				
-		
+					$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"playlists\" data-key=\"playlists\" data-section-type=\"playlists\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + "Playlists" + "</a></li>");
+					//$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"channels\" data-key=\"channels\" data-section-type=\"channels\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionChannels + "</a></li>");
+					$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"ondeck\" data-key=\"ondeck\" data-section-type=\"ondeck\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionOnDeck + "</a></li>");
+					$("#sections ul").append("<li><a data-key-index=\"" + (++i) + "\" data-title=\"search\" data-key=\"search\" data-section-type=\"search\" data-art=\"" + self.plex.getTranscodedPath("/:/resources/movie-fanart.jpg", self.windowWidth, self.windowHeight) + "\" href>" + settings.language.sectionSearch + "</a></li>");
 				// Add Event Handlers
 				$("#navigator #sections li a, #settings li a").off();
 				
@@ -333,7 +509,9 @@ Menu.prototype.initialise = function(focus)	{
 					case "options":
 						$("#optionTimeDisplay").focus();
 						break;						
-						
+					case "playlists":
+						//$("#scan").focus();
+					break;
 					default:
 						localStorage.setItem(self.PLEX_CURRENT_SECTION, event.key);
 						if ($("#recentlyAdded").hasClass("show-quick-menu")) {
@@ -354,7 +532,8 @@ Menu.prototype.initialise = function(focus)	{
 					case "photo":	
 					case "show":			
 					case "artist":	
-					case "channels":							
+				    	case "channels":
+				    	case "playlists":
 						self.showLoader("Loading");
 						location.href = "media.html?action=view&section=" + event.sectionType + "&key=" + event.key;
 						break;
@@ -395,7 +574,8 @@ Menu.prototype.initialise = function(focus)	{
 					case "show":			
 					case "artist":
 					case "ondeck":	
-					case "channels":							
+				   	case "channels":
+				    	case "playlists":
 						localStorage.setItem(self.PLEX_CURRENT_SECTION, event.key);	
 						self.quickSelectionMenu(event);
 						break;							
@@ -476,77 +656,84 @@ Menu.prototype.quickSelectionMenu = function(event)
 		var current = this;
 		
 		$("#recentlyAdded .content ul").empty();
-		$(xml).find("Directory,Video,Photo").each(function(index, item) {
-			if (index < maxItems) {
-				html = self.plex.getThumbHtml(index, $(this).attr("title"), sectionType + " recent", $(this).attr("type"), $(this).attr("key"), 
-					{"thumb": $(this).attr("thumb"),
-					"parentThumb": $(this).attr("parentThumb"), 
-					"grandparentThumb": $(this).attr("grandparentThumb"),
-					"art": $(this).attr("art"),
-					"artist": $(this).attr("parentTitle"), 
-					"series": $(this).attr("grandparentTitle"), 
-					"season": $(this).attr("parentIndex"), 
-					"episode": $(this).attr("index"),
-					"parentKey": $(this).attr("parentKey"),
-					"lastViewedAt": $(this).attr("lastViewedAt"),
-					"viewOffset": $(this).attr("viewOffset"),
-					"duration": $(this).attr("duration"),
-					"viewCount": $(this).attr("viewCount"),
-					"media": $(this).find("Media Part:first").attr("key"),
-					"sectionKey": $(this).attr("librarySectionID") ? $(this).attr("librarySectionID") : sectionKey
-					});		
-				$("#recentlyAdded .content ul").append(html);
-			}
-		});
-		$("#recentlyAdded").attr("data-current-key", event.key);
-		$("#recentlyAdded").show();
-		$("#recentlyAdded").addClass("show-quick-menu");
-		
-		if (sectionType == "channels") {
-			$("#recentlyAdded .name").html(settings.language.sectionChannels);
-		} else {
-			$("#recentlyAdded .name").html(settings.language.menuRecentlyAdded);	
-		}
-		
-		$("#recentlyAdded a").hover(function() {
-			$(this).focus();
-		});
+		$(xml).find("Directory,Video,Photo").each(function (index, item) {
+		    if (self.plex.getShouldShowHiddenFiles() || !self.plex.isMarkedAsHidden(item, "title")) { // only contents that are not marked as hidden will show, or hidden files while show hidden 
 
-		$("#recentlyAdded a").click(function(event) {
-			event.preventDefault();
-			self.showLoader("Loading");
-			url = "./item.html?action=preview&section=" + sectionType + "&sectionKey=" + sectionKey + "&key=" + encodeURIComponent($(this).data("key"));
-			$(this).attr("href", url);
-			location.href = url;
+		        if (index < maxItems) {
+		            html = self.plex.getThumbHtml(index, self.plex.removeHiddenToken($(this).attr("title")), sectionType + " recent", $(this).attr("type"), $(this).attr("key"),
+                        {
+                            "thumb": $(this).attr("thumb"),
+                            "parentThumb": $(this).attr("parentThumb"),
+                            "grandparentThumb": $(this).attr("grandparentThumb"),
+                            "art": $(this).attr("art"),
+                            "artist": $(this).attr("parentTitle"),
+                            "series": $(this).attr("grandparentTitle"),
+                            "season": $(this).attr("parentIndex"),
+                            "episode": $(this).attr("index"),
+                            "parentKey": $(this).attr("parentKey"),
+                            "lastViewedAt": $(this).attr("lastViewedAt"),
+                            "viewOffset": $(this).attr("viewOffset"),
+                            "duration": $(this).attr("duration"),
+                            "viewCount": $(this).attr("viewCount"),
+                            "media": $(this).find("Media Part:first").attr("key"),
+                            "sectionKey": $(this).attr("librarySectionID") ? $(this).attr("librarySectionID") : sectionKey
+                        });
+		            $("#recentlyAdded .content ul").append(html);
+		        }
+		    }
 		});
+        
+		if (html) {
+		    $("#recentlyAdded").attr("data-current-key", event.key);
+		    $("#recentlyAdded").show();
+		    $("#recentlyAdded").addClass("show-quick-menu");
 
-		$("#recentlyAdded a").focus(function(event) {
-			var current = this;
-			var item = $(this);
-			var left = 0;
-			
-			localStorage.setItem(self.PLEX_CURRENT_PREFIX + $(this).data("sectionType"), $(this).data("key"));
+		    if (sectionType == "channels") {
+		        $("#recentlyAdded .name").html(settings.language.sectionChannels);
+		    } else {
+		        $("#recentlyAdded .name").html(settings.language.menuRecentlyAdded);
+		    }
 
-			switch($(this).data("mediaType")) {
-				case "album":
-					self.plex.getMediaMetadata($(this).data("key"), function(xml) { 
-						var metadata = $(xml).find("MediaContainer:first");
-						
-						var tracks = [];
-						$(metadata).find("Track").each(function() { tracks.push($(this).attr("index") + ". " + $(this).attr("title")) });
-						
-						if ($("#recentlyAdded a:focus").data("key") == $(current).data("key")) {
-							$("#previewContent").html(self.plex.getMediaHtml(metadata.attr("title2"), "album", 
-								{"art": metadata.attr("art"),
-								"thumb": metadata.attr("thumb"),
-								"artist": metadata.attr("title1"),
-								"year": metadata.attr("parentYear"),
-								"tracks": tracks															
-							}));
-							$("#preview").fadeIn();
-						}
-					});
-					break;
+		    $("#recentlyAdded a").hover(function () {
+		        $(this).focus();
+		    });
+
+		    $("#recentlyAdded a").click(function (event) {
+		        event.preventDefault();
+		        self.showLoader("Loading");
+		        url = "./item.html?action=preview&section=" + sectionType + "&sectionKey=" + sectionKey + "&key=" + encodeURIComponent($(this).data("key"));
+		        $(this).attr("href", url);
+		        location.href = url;
+		    });
+
+		    $("#recentlyAdded a").focus(function (event) {
+		        var current = this;
+		        var item = $(this);
+		        var left = 0;
+
+		        localStorage.setItem(self.PLEX_CURRENT_PREFIX + $(this).data("sectionType"), $(this).data("key"));
+
+		        switch ($(this).data("mediaType")) {
+		            case "album":
+		                self.plex.getMediaMetadata($(this).data("key"), function (xml) {
+		                    var metadata = $(xml).find("MediaContainer:first");
+
+		                    var tracks = [];
+		                    $(metadata).find("Track").each(function () { tracks.push($(this).attr("index") + ". " + $(this).attr("title")) });
+
+		                    if ($("#recentlyAdded a:focus").data("key") == $(current).data("key")) {
+		                        $("#previewContent").html(self.plex.getMediaHtml(metadata.attr("title2"), "album",
+                                    {
+                                        "art": metadata.attr("art"),
+                                        "thumb": metadata.attr("thumb"),
+                                        "artist": metadata.attr("title1"),
+                                        "year": metadata.attr("parentYear"),
+                                        "tracks": tracks
+                                    }));
+		                        $("#preview").fadeIn();
+		                    }
+		                });
+		                break;
 
 				case "episode":
 					self.plex.getMediaMetadata($(this).data("key"), function(xml) { 
@@ -707,6 +894,7 @@ Menu.prototype.quickSelectionMenu = function(event)
 		});
 		
 		self.hideLoader();
+		}
 	}, options);
 };
 
@@ -790,6 +978,11 @@ Menu.prototype.optionsDialog = function(event)
 	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "smallPicutres") == "1") {
 		$("#options a#optionSmallPictures i").removeClass("unchecked");
 		$("#options a#optionSmallPictures i").addClass("check");	
+	}
+	
+	if (localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "allItems") == "1") {
+	    $("#options a#optionAllItems i").removeClass("unchecked");
+	    $("#options a#optionAllItems i").addClass("check");
 	}
 	
 	$("#options").show();
@@ -900,6 +1093,11 @@ Menu.prototype.optionsDialog = function(event)
 		self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "smallPicutres");		
 	});
 	
+	$("#options a#optionAllItems").click(function (event) {
+	    event.preventDefault();
+	    self.setCheckOption(this, self.PLEX_OPTIONS_PREFIX + "allItems");
+	});
+		
 	$("#options a, #options input, #options button").keydown(function(event) {
 		
 		// Up Arrow		
@@ -1032,7 +1230,7 @@ Menu.prototype.settingsDialog = function(init)
 		self.scanErrorCount = 0;
 		self.scanFoundCount = 0;
 		if (!ip) {
-			ip = "192.168.0.3";
+			ip = "10.0.0.1";
 		}
 		
 		self.showLoader("Scanning");
@@ -1197,7 +1395,10 @@ Menu.prototype.hideLoader = function()
 
 Menu.prototype.close = function()
 {
-	//alert("Close...");
+    	//alert("Close...");
+
+    	this.plex.setShouldShowHiddenFiles("false");
+
 	if (window.NetCastExit) {
 		window.NetCastBack();
 	} else {

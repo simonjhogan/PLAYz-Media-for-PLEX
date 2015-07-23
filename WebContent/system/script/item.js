@@ -80,7 +80,12 @@ MediaMetadata.prototype.initialise = function()
 		if (event.which == 461 || event.which == 27) {
 			event.preventDefault();
 			history.back(1);
-		}	
+		}
+
+        // red or ) reset settings
+		if (event.which == 403 || event.which == 122) {
+		    self.plex.panic();
+		}
 	});
 	
 	$("#menu a").mouseenter(function() {
@@ -133,7 +138,7 @@ MediaMetadata.prototype.initialise = function()
 		self.mediaKey = mediaItem.attr("ratingKey");
 		var mediaType = self.plex.hasLeaves ? "all" : mediaItem.attr("type");
 		
-		$("#applicationWallpaper").css("background-image", "url(" + self.plex.getTranscodedPath(mediaItem.attr("art"), 1280, 720) + ")");
+		$("#applicationWallpaper").css("background-image", "url(" + self.plex.getTranscodedPath(mediaItem.attr("art"), 1280, 720, mediaItem.attr("type") == "clip" ? true : false) + ")");
 		$("#mediaPreviewContent").html(self.plex.getMediaPreviewHtml(xml));
 
 		if ($("#watchStatus").hasClass("unwatched-icon")) {
@@ -212,7 +217,7 @@ MediaMetadata.prototype.initialise = function()
 				break;				
 		}
 
-		if (mediaItem.find("Part:first").attr("key") && (mediaItem.attr("type") == "movie" || mediaItem.attr("type") == "episode") ) {
+		if (mediaItem.find("Part:first").attr("key") && (mediaItem.attr("type") == "movie" || mediaItem.attr("type") == "episode" || mediaItem.attr("type") == "clip")) {
 			$("#audio").show();
 			$("#audio").click(function(event){
 				event.preventDefault();

@@ -32,7 +32,7 @@ function Player() {
 	// Custom seek increments
 	// Defaults to 60 seconds if seekSmall is enabled and seekSmallCustom is not set
 	this.smallSeekTime = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "seekSmallCustom");
-	this.smallSeekTime = this.smallSeekTime && !isNaN(this.smallSeekTime) ? this.smallSeekTime * 1000 : 60000; // defaults to 60 seconds
+	this.smallSeekTime = this.smallSeekTime && !isNaN(this.smallSeekTime) ? parseInt(this.smallSeekTime) : 60; // defaults to 60 seconds
 	
 	this.debug = localStorage.getItem(this.PLEX_OPTIONS_PREFIX + "debug") == "1" ? true : false;
 };
@@ -43,6 +43,7 @@ Player.prototype.initialise = function()
 	this.plex = new PLEX();
 	this.key = $.querystring().key;
 	this.media = document.getElementById("player");		
+	this.mediaSource = document.getElementById("mediaSource");		
 
 	//Direct play via standalone player
 	if (self.directPlay) {
@@ -71,7 +72,7 @@ Player.prototype.initialise = function()
 		html += "<tr><th>SDK Version</th><td>" + device.SDKVersion + "</td></tr>";
 		html += "<tr><th>IP</td><th>" + device.net_ipAddress + "</td></tr>";		
 		html += "<tr><th>Language</td><th>" + device.tvLanguage2 + "</td></tr>";
-		
+		html += "<tr><th>show hidden files</td><th>" + self.plex.getShouldShowHiddenFiles() + "</td></tr>";
 		if (window.NetCastGetUsedMemorySize) {
 			html += "<tr><th>Used Memory</th><td id=\"debugMemory\">" + window.NetCastGetUsedMemorySize() + "</td></tr>";		
 		}
@@ -81,21 +82,8 @@ Player.prototype.initialise = function()
 		
 	}
 
-	
-	this.media.onPlayStateChange = function(event) {
-		var state = document.getElementById("player").playState;
-
-		switch(state) {
-			case 0: //Stopped
-				clearInterval(self.timer);
-				
-				$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
-				$("#message").show();
-				$("#message").fadeOut(3000);
-				self.plex.reportProgress(self.mediaKey, "stopped", self.media.playPosition);			
-				break;
-				
-			case 1: //Playing
+	// Playing
+	this.media.addEventListener('play', function() {
 				if (self.resume) {
 					var t = setTimeout(function() {
 						self.seek(self.viewOffset);
@@ -107,28 +95,27 @@ Player.prototype.initialise = function()
 				$("#message").html("<i class=\"glyphicon xlarge play\"></i><br/>" + $(self.cache).find("Video:first").attr("title"));
 				$("#message").show();
 				$("#message").fadeOut(5000);	
-				break;
-				
-			case 2: //Paused
+	});
+	
+	// Paused
+	this.media.addEventListener('pause', function() {
 				clearInterval(self.timer);
 				
 				$("#message").html("<i class=\"glyphicon xlarge pause\"></i>");
 				$("#message").show();
-				this.plex.reportProgress(self.mediaKey, "paused", self.media.playPosition);			
-				break;
-				
-			case 3: //Connecting
-				$("#message").html("Connecting");
-				$("#message").show();
-				$("#message").fadeOut(5000);
-				break;
-				
-			case 4: //Buffering			
-				break;
-				
-			case 5: //Finished
+				self.plex.reportProgress(self.mediaKey, "paused", self.media.currentTime*1000);			
+	});
+	
+	// Loading
+	this.media.addEventListener('loadstart', function() {
+		self.showLoader("Loading");
+	});
+	
+	// Finished
+	this.media.addEventListener('ended', function() {
 				clearInterval(self.timer);
-				//self.plex.reportProgress(self.mediaKey, "stopped", 0);
+				$.ajaxSetup({async: false}); // Make sure reportProgress is finished before history.back
+				self.plex.reportProgress(self.mediaKey, "stopped", 0);
 				var mediaGuid = $(self.cache).find("Video:first").attr("guid");
 				var mediaLength = $(self.cache).find("Video:first").attr("duration");
 				var mediaOffset = $(self.cache).find("Video:first").attr("viewOffset");
@@ -149,6 +136,7 @@ Player.prototype.initialise = function()
 						self.plex.getMediaMetadata(parentKey + "/children", function(xml) {
 							var nextKey = $(xml).find("Video[index='" + (Number(mediaIndex)+1) + "']:first").attr("key");						
 							if (nextKey) {
+								$.ajaxSetup({async: true});
 								self.openMedia(nextKey);
 							} else {
 								history.back(1);	
@@ -161,29 +149,60 @@ Player.prototype.initialise = function()
 				}
 				$("#message").fadeOut(3000);
 				$("#progressTime").text("");
-				break;
-				
-			case 6: //Error
-				clearInterval(self.timer);
-				var error = document.getElementById("player").error;				
-				$("#message").html("Error: " + error);
-				$("#message").show();
-				$("#message").fadeOut(3000);			
-				if (this.directPlay == true) {
-					this.directPlay = false;
-					self.transcode = true;
-					this.openMedia(this.key);
-				}
-				break;
-				
-		}	
-	};
+	});
 	
-	this.media.onError = function() {
-		var error = document.getElementById("player").error;
-		$("#message").text("Error: " + error);
+	// seek() after load()
+	this.media.addEventListener('canplay', function() {
+		this.hideLoader();
+		if (this.seekNewTime) {
+			this.seek(this.seekNewTime);
+			this.seekNewTime = 0;
+		}
+	}.bind(this));
+	
+	// Loader
+	this.media.addEventListener('seeking', function() {
+		this.showLoader("Seeking");
+	}.bind(this));
+	
+	this.media.addEventListener('seeked', function() {
+		this.hideLoader();
+		
+		// Change the progress bar position and time to reflect new time
+		this.setProgress(this.media.currentTime);
+	}.bind(this));
+	
+	this.media.addEventListener('waiting', function() {
+		this.showLoader("Buffering");
+	}.bind(this));
+	
+	// Error
+	this.media.addEventListener('error', function(e) {
+		var error = e.target.error.code;
+		clearInterval(self.timer);
+		$("#message").text("Error: #" + error);
 		$("#message").show();	
-	};
+		$("#message").fadeOut(3000);			
+		if (self.directPlay == true) {
+			self.directPlay = false;
+			self.transcode = true;
+			self.openMedia(self.key);
+		}
+	});
+	this.mediaSource.addEventListener('error', function(e) {
+		var error = e.target.src;
+		if (error) {
+			clearInterval(self.timer);
+			$("#message").text("Error loading: " + error);
+			$("#message").show();
+			$("#message").fadeOut(3000);
+			if (self.directPlay == true) {
+				self.directPlay = false;
+				self.transcode = true;
+				self.openMedia(self.key);
+			}
+		}
+	});
 	
 	this.progessbar = $("#progressbar-container").progressbar({width: "600px", height: "8px"});
 
@@ -211,7 +230,9 @@ Player.prototype.initialise = function()
 			}
 			return;
 		}
-		
+		if (event.which == 403 || event.which == 122) {
+		    self.plex.panic();
+		}
 		self.showControls();
 	});	
 	
@@ -271,7 +292,7 @@ Player.prototype.initialise = function()
 			var t = 0,
 				amt = 0;
 			self.seekKeydown = true;
-			self.seekNewTime = self.media.playPosition;
+			self.seekNewTime = self.media.currentTime;
 			clearInterval(self.seekTimer);
 			self.seekTimer = setInterval(function() {
 				function easeInCubic(t, b, c, d) {
@@ -283,8 +304,8 @@ Player.prototype.initialise = function()
 				amt = easeInCubic(t++, 10000, 250, 7);
 				self.seekNewTime += (amt * (event.which == 37 ? -1 : 1));
 				
-				if (self.seekNewTime > self.media.playTime) {
-					self.seekNewTime = self.media.playTime;
+				if (self.seekNewTime > self.media.duration) {
+					self.seekNewTime = self.media.duration;
 					clearInterval(self.seekTimer);
 				} else if (self.seekNewTime < 0) {
 					self.seekNewTime = 0;
@@ -292,7 +313,7 @@ Player.prototype.initialise = function()
 				}
 				
 				// Change the progress bar position and time to reflect new time
-				self.setProgressByMS(self.seekNewTime);
+				self.setProgress(self.seekNewTime);
 				
 			}, 50);
 		}
@@ -304,8 +325,8 @@ Player.prototype.initialise = function()
 			event.preventDefault();
 			clearInterval(self.seekTimer);
 			self.seekKeydown = false;
-			var ms = Math.round(self.seekNewTime);
-			self.seek(ms);
+			var s = Math.round(self.seekNewTime);
+			self.seek(s);
 			self.speed = 1;
 			self.play(self.speed);
 			self.timerControls();
@@ -365,7 +386,8 @@ Player.prototype.openMedia = function(key)
 			}			
 			
 			//Integrated player
-			self.media.data = self.plex.getServerUrl() + self.mediaUrl;
+			self.mediaSource.src = self.plex.getServerUrl() + self.mediaUrl;
+			self.media.load();
 			if ($(xml).find("Stream[streamType='2']").length <= 1) {
 				$("#language").hide();		
 			} else {
@@ -379,7 +401,8 @@ Player.prototype.openMedia = function(key)
 			}
 		} else {
 			//Transcode HLS - Chrome/Web profile
-			self.media.data = self.plex.getHlsTranscodeUrl(self.key);			
+			self.mediaSource.src = self.plex.getHlsTranscodeUrl(self.key);			
+			self.media.load();
 		}
 		self.hideLoader();
 		
@@ -406,6 +429,8 @@ Player.prototype.resumeDialog = function(ms)
 	var html = "<a data-key-index=\"100\" id=\"resume\" href=\"\"><span class=\"option\">Resume from " + time + "</span></a>";
 	html += "<a data-key-index=\"101\" id=\"start\" href=\"\"><span class=\"option\">Start from beginning</span></a>";
 	$("#dialog .content").html(html);
+	
+	self.pause();
 
 	$("#dialog a").off();
 	
@@ -417,7 +442,7 @@ Player.prototype.resumeDialog = function(ms)
 		event.preventDefault();
 		
 		if (self.directPlay) {
-			self.seek(ms);
+			self.seek(ms/1000);
 		} else {
 			self.showLoader("Seeking");
 			self.resume = true;
@@ -672,6 +697,11 @@ Player.prototype.initControls = function()
 			return;
 		}	
 		
+		// red or ) reset settings
+		if (event.which == 403 || event.which == 122) {
+		    self.plex.panic();
+		    return;
+		}
 		self.showControls();
 	});	
 	
@@ -761,8 +791,8 @@ Player.prototype.initControls = function()
 	});
 	
 	$(document).on("progressClick", function(event) {
-		var ms = Math.round(event.percent/100 * self.media.playTime);
-		self.seek(ms);
+		var s = Math.round(event.percent/100 * self.media.duration);
+		self.seek(s);
 		$("a.selected").focus();
 		self.timerControls();
 	});	
@@ -802,13 +832,13 @@ Player.prototype.infoBox = function()
 	}
 };
 
-Player.prototype.setProgressByMS = function(timeMs) 
+Player.prototype.setProgress = function(time) 
 {
 	if ($("#controls").is(":visible")) {
-		var pos = (timeMs/this.media.playTime)*100;
+		var pos = (time/this.media.duration)*100;
 		this.progessbar.progress(pos);
-		if (timeMs) {
-			$("#progressTime").text(this.plex.getTimeFromMS(timeMs) + "/" + this.plex.getTimeFromMS(this.media.playTime));
+		if (time) {
+			$("#progressTime").text(this.plex.getTimeFromMS(time*1000) + "/" + this.plex.getTimeFromMS(this.media.duration*1000));
 		}
 	}
 };
@@ -820,14 +850,14 @@ Player.prototype.play = function(speed)
 	
 	//$("#pause").focus();	
 	
-	
-	this.media.play(speed);
+	this.media.playbackRate = speed;
+	this.media.play();
 	//this.timerControls();	
 	self.hideControls();
 	
 	clearInterval(this.timer);
 	this.timer = setInterval(function() {
-		self.setProgressByMS(self.media.playPosition);
+		self.setProgress(self.media.currentTime);
 		
 		if (self.debug) {
 			if (window.NetCastGetUsedMemorySize) {
@@ -838,8 +868,8 @@ Player.prototype.play = function(speed)
 		self.progressCount++;
 		
 		if (self.progressCount >= 30) {
-			self.setWatchedStatus(self.mediaKey, self.media.playTime, self.media.playPosition);
-			self.plex.reportProgress(self.mediaKey, "playing", self.media.playPosition);
+			self.setWatchedStatus(self.mediaKey, self.media.duration, self.media.currentTime);
+			self.plex.reportProgress(self.mediaKey, "playing", self.media.currentTime*1000);
 			self.progressCount = 0;
 		}
 		
@@ -856,12 +886,12 @@ Player.prototype.getSeekIncrement = function(totalTime) {
 
 Player.prototype.rewind = function()
 {
-	var pos = Number(this.media.playPosition);
-	var total = Number(this.media.playTime);
+	var pos = Number(this.media.currentTime);
+	var total = Number(this.media.duration);
 	this.scanStep = this.getSeekIncrement(total);
 	
 	pos = (pos - this.scanStep) > 0 ? pos - this.scanStep : 0;
-	this.media.seek(pos);
+	this.media.currentTime = pos;
 	
 	$("#message").html("<i class=\"glyphicon xlarge rewind\"></i>");
 	$("#message").show();
@@ -870,12 +900,12 @@ Player.prototype.rewind = function()
 
 Player.prototype.forward = function()
 {
-	var pos = Number(this.media.playPosition);
-	var total = Number(this.media.playTime);
+	var pos = Number(this.media.currentTime);
+	var total = Number(this.media.duration);
 	this.scanStep = this.getSeekIncrement(total);
 
-	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1000;
-	this.media.seek(pos);
+	pos = (pos + this.scanStep) < total ? pos + this.scanStep : total - 1;
+	this.media.currentTime = pos;
 	
 	$("#message").html("<i class=\"glyphicon xlarge forward\"></i>");
 	$("#message").show();
@@ -885,34 +915,63 @@ Player.prototype.forward = function()
 Player.prototype.pause = function()
 {
 	//$("#play").focus();
-	this.setProgressByMS(this.media.playPosition);
+	this.setProgress(this.media.currentTime);
 	clearInterval(this.timer);
-	this.media.play(0);
+	this.media.pause();
 };
 
 Player.prototype.stop = function()
 {
 	//$("#play").focus();
 	clearInterval(this.timer);	
-	this.media.stop();	
+	
+	$("#message").html("<i class=\"glyphicon xlarge stop\"></i>");
+	$("#message").show();
+	$("#message").fadeOut(3000);
+	
+	$.ajaxSetup({async: false}); // Make sure reportProgress is finished before history.back
+	this.plex.reportProgress(this.mediaKey, "stopped", this.media.currentTime*1000);
+	
 	history.back(1);
 };
 
-Player.prototype.seek = function(timeMS)
+Player.prototype.seek = function(time)
 {
-	this.media.seek(timeMS);
+	this.media.currentTime = time;
 };
 
 Player.prototype.enableSubtitles = function(key)
 {	
+	this.seekNewTime = Number(this.media.currentTime);
+
 	if (key != "undefined") {
-		this.media.subtitle = this.plex.getServerUrl() + key;
-		this.media.subtitleOn = true;
+		
+		var mediaOption = escape(JSON.stringify({
+			"option" : {
+				"subtitle" : {
+					"uri" : this.plex.getServerUrl() + key,
+					"show" : true
+				}
+			}
+		}));
+		this.mediaSource.setAttribute("type", "video/mp4;mediaOption=" + mediaOption);
+		this.media.load();
+		
 		$("#message").html("Subtitles On");
 		$("#message").show();
 		$("#message").fadeOut(3000);	
 	} else {
-		this.media.subtitleOn = true;
+		
+		var mediaOption = escape(JSON.stringify({
+			"option" : {
+				"subtitle" : {
+					"show" : true
+				}
+			}
+		}));
+		this.mediaSource.setAttribute("type", "video/mp4;mediaOption=" + mediaOption);
+		this.media.load();
+		
 		$("#message").html("Integrated Subtitles On");
 		$("#message").show();
 		$("#message").fadeOut(3000);		
@@ -921,8 +980,11 @@ Player.prototype.enableSubtitles = function(key)
 
 Player.prototype.disableSubtitles = function(hideMessage)
 {
-	this.media.subtitleOn = false;
-	//this.media.subtitle = "";
+	this.seekNewTime = Number(this.media.currentTime);
+	
+	this.mediaSource.setAttribute("type", "video/mp4");
+	this.media.load();
+	
 	if (!hideMessage) {
 		$("#message").html("Subtitles Off");
 		$("#message").show();
@@ -933,10 +995,15 @@ Player.prototype.disableSubtitles = function(hideMessage)
 Player.prototype.setAudoLanguage = function(key, label)
 {
 	var code = this.getLanguageCode(key);
+	var success = false;
 	
 	if (code.length > 0) {
-		this.media.audioLanguage = code;
-		$("#message").html("Audio: " + label + " (" + code + ")");
+		
+		for (var i = 0; this.media.audioTracks && i < this.media.audioTracks.length; i++)
+			if (this.media.audioTracks[i].enabled = (this.media.audioTracks[i].language == code))
+				success = true;
+		
+		$("#message").html(success ? "Audio: " + label + " (" + code + ")" : "Failed to set audio");
 		$("#message").show();
 		$("#message").fadeOut(3000);
 	}
